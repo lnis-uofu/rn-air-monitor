@@ -1,0 +1,92 @@
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+import {StyleSheet, View, Image, TextInput, Text} from 'react-native';
+import {w, h} from '../../api/Dimensions';
+
+export default class InputField extends Component {
+  constructor() {
+    super();
+    this.state = {
+      text: '',
+    };
+  }
+
+  setInputValue = text => {
+    this.setState({text: text});
+  };
+
+  getInputValue = () => {
+    return this.state.text;
+  };
+
+  render() {
+    return (
+      <View style={styles.inputWrapper}>
+        <Image source={this.props.source} style={styles.inlineImg} />
+        <TextInput
+          style={styles.input}
+          placeholder={this.props.placeholder}
+          secureTextEntry={this.props.secureTextEntry}
+          autoCorrect={this.props.autoCorrect}
+          autoCapitalize={this.props.autoCapitalize}
+          returnKeyType={this.props.returnKeyType}
+          maxLength={this.props.maxLength}
+          placeholderTextColor="white"
+          underlineColorAndroid="transparent"
+          onSubmitEditing={this.props.onSubmitEditingFunc}
+          onChangeText={this.props.onChangeTextFunc}
+          ref={this.props.refProp}
+        />
+      </View>
+    );
+  }
+}
+
+InputField.propTypes = {
+  source: PropTypes.number.isRequired,
+  placeholder: PropTypes.string.isRequired,
+  secureTextEntry: PropTypes.bool,
+  autoCorrect: PropTypes.bool,
+  autoCapitalize: PropTypes.string,
+  returnKeyType: PropTypes.string,
+  maxLength: PropTypes.number,
+  onChangeTextFunc: PropTypes.func,
+  onSubmitEditingFunc: PropTypes.func,
+  refProp: PropTypes.ref,
+};
+
+InputField.defaultProps = {
+  focus: () => {},
+  style: {},
+  placeholder: '',
+  blurOnSubmit: false,
+  returnKeyType: 'next',
+  error: false,
+  keyboardType: null,
+  secureTextEntry: false,
+  autoCapitalize: 'none',
+};
+
+const styles = StyleSheet.create({
+  input: {
+    width: w(80),
+    height: h(7),
+    marginHorizontal: 20,
+    paddingLeft: 45,
+    borderRadius: 20,
+    color: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ffffff',
+  },
+  inputWrapper: {
+    flex: 1,
+  },
+  inlineImg: {
+    position: 'absolute',
+    zIndex: 99,
+    width: w(4),
+    height: h(4),
+    left: 35,
+    top: h(1),
+  },
+});
