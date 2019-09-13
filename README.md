@@ -16,7 +16,7 @@ ${JAVA_HOME} = D:\Program Files\Android\Android Studio\jre\jre
 
 **Project set up**
 1. Navigate to the root directory
-2. npm install
+2. npm install && npm run postinstall
 3. The top-level build.gradle version value
         buildToolsVersion = "28.0.3"
         minSdkVersion = 16
@@ -30,5 +30,16 @@ ${JAVA_HOME} = D:\Program Files\Android\Android Studio\jre\jre
 - VSCode for react-native javascript
 - Android studio for android development and Android Virtual Device (AVD)
 
+**Notes:**
+- Send Ctrl + M to Android Virtual Device:
+'adb shell input keyevent 82'
+
 **References:**
+Set up react native development
 https://facebook.github.io/react-native/docs/getting-started
+
+Create a Firebase project and get google-service.json for Google-Application Authentication
+https://rnfirebase.io/docs/v5.x.x/installation/initial-setup#Creating-a-new-project
+
+Install react-native-firebase module for project (search for @react-native-firebase in code to have more details)
+https://rnfirebase.io/docs/v5.x.x/getting-started
