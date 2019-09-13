@@ -1,9 +1,11 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
+ * @file: App.js
  *
- * @format
- * @flow
+ * @summary
+ * Load Login page in ./src/components/screens/Login/Login at the beginning
+ *
+ * @author: Quang Nguyen
+ *
  */
 
 import React, {Component} from 'react';

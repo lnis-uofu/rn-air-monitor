@@ -1,3 +1,12 @@
+/**
+ * @file: Login.js
+ *
+ * @summary
+ * Render the Login page of the project
+ *
+ * @author: Quang Nguyen
+ *
+ */
 import React, {Component} from 'react';
 import {
   StyleSheet,

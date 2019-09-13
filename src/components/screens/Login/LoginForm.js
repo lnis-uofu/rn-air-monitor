@@ -1,6 +1,28 @@
-import React, {Component} from 'react';
-import {StyleSheet, View, Text, TouchableOpacity, Image} from 'react-native';
+/**
+ * @file: LoginForm.js
+ *
+ * @summary
+ * @function userNameInputHandler: deal with changes on username input
+ * @function passwordInputHandler: deal with changes on password input
+ * @function showPass: show password touch
+ * @function focusPasswordAction: Action when hit Next button on username input
+ * @function passwordOnSubmitEditing: Action when hit Done button on password input
+ * @function onLogin: Get username and password for login
+ *
+ * @author: Quang Nguyen
+ *
+ */
 
+import React, {Component} from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  Alert,
+} from 'react-native';
+import firebase from 'react-native-firebase';
 import {w, h, totalSize} from '../../../api/Dimensions';
 import InputField from '../../components/InputField.js';
 const passwordLogo = require('../../../../assets/password.png');
@@ -18,8 +40,10 @@ export default class LoginForm extends Component {
       press: false,
       userInfo: null,
       error: null,
+      loading: true,
     };
     this.passwordInput = React.createRef();
+    this.usernameInput = React.createRef();
   }
 
   userNameInputHandler = text => {
@@ -49,8 +73,69 @@ export default class LoginForm extends Component {
     this.onPress();
   };
 
+  /**
+   * When the App component mounts, we listen for any authentication
+   * state changes in Firebase.
+   * Once subscribed, the 'user' parameter will either be null
+   * (logged out) or an Object (logged in)
+   */
+  componentDidMount() {
+    this.authSubscription = firebase.auth().onAuthStateChanged(user => {
+      this.setState({
+        loading: false,
+        user,
+      });
+    });
+  }
+
+  /**
+   * Don't forget to stop listening for authentication state changes
+   * when the component unmounts.
+   */
+  componentWillUnmount() {
+    this.authSubscription();
+  }
+
+  onLogin = () => {
+    const {username, password} = this.state;
+    console.log('debug', username, password);
+    firebase
+      .auth()
+      .signInWithEmailAndPassword(username, password)
+      .then(user => {
+        console.log('logged IN!!!!!!!!!!!!!!!!!!!');
+        // If you need to do anything with the user, do it here
+        // The user will be logged in automatically by the
+        // `onAuthStateChanged` listener we set up in App.js earlier
+      })
+      .catch(error => {
+        const {code, message} = error;
+        // Works on both iOS and Android
+        Alert.alert(
+          'Login failed',
+          message,
+          [
+            {
+              text: 'Cancel',
+              onPress: () => console.log('Cancel Pressed'),
+              style: 'cancel',
+            },
+            {
+              text: 'OK',
+              onPress: () => {
+                this.passwordInput.clear();
+                this.usernameInput.clear();
+                this.usernameInput.focus();
+              },
+            },
+          ],
+          {cancelable: false},
+        );
+      });
+  };
+
   onPress = () => {
-    console.log(this.state.username + '/' + this.state.password);
+    this.onLogin();
   };
 
   render() {
@@ -99,7 +184,7 @@ export default class LoginForm extends Component {
         {/* @Todo: resolve warning about ref in password input field*/}
         <InputField
           source={personLogo}
-          placeholder={'Username'}
+          placeholder={'Email'}
           secureTextEntry={false}
           autoCorrect={false}
           returnKeyType={'next'}
@@ -108,6 +193,9 @@ export default class LoginForm extends Component {
             this.focusPasswordAction(nativeEvent.text)
           }
           onChangeTextFunc={this.userNameInputHandler}
+          refProp={input => {
+            this.usernameInput = input;
+          }}
         />
         <InputField
           source={passwordLogo}
