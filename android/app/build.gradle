@@ -133,6 +133,8 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+        // @react-native-firebase:firebase-firestore
+        multiDexEnabled true
     }
     splits {
         abi {
@@ -191,6 +193,14 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "com.facebook.react:react-native:+"  // From node_modules
 
+    // Firebase dependencies
+    // @react-native-firebase
+    implementation "com.google.android.gms:play-services-base:16.1.0"
+    implementation "com.google.firebase:firebase-core:16.0.9"
+    implementation 'com.google.firebase:firebase-firestore:21.1.0'
+    implementation 'com.google.firebase:firebase-auth:19.0.0'
+    // @react-native-firebase
+
     if (enableHermes) {
       def hermesPath = "../../node_modules/hermesvm/android/";
       debugImplementation files(hermesPath + "hermes-debug.aar")
@@ -208,3 +218,6 @@ task copyDownloadableDepsToLibs(type: Copy) {
 }
 
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
+// @react-native-firebase
+apply plugin: 'com.google.gms.google-services'
+// @react-native-firebase
