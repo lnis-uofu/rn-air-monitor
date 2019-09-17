@@ -28,13 +28,12 @@ import {w, h, totalSize} from '../../../api/Dimensions';
 import InputField from '../../components/InputField.js';
 const passwordLogo = require('../../../../assets/password.png');
 const eyeImg = require('../../../../assets/eye_black.png');
-const personLogo = require('../../../../assets/person.png');
+const emailLogo = require('../../../../assets/email.png');
 
 export default class LoginForm extends Component {
   constructor() {
     super();
     this.state = {
-      focusPassword: false,
       username: '',
       password: '',
       showPass: true,
@@ -97,6 +96,11 @@ export default class LoginForm extends Component {
     this.authSubscription();
   }
 
+  /*
+    @Todo:
+    - add async when login in
+    - Show sign in progress: Loading gif while waiting authentication
+  */
   onLogin = () => {
     const {username, password} = this.state;
     console.log('debug', username, password);
@@ -144,8 +148,8 @@ export default class LoginForm extends Component {
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
         {/* @Todo: resolve warning about ref in password input field*/}
         <InputField
-          source={personLogo}
-          placeholder={'Email'}
+          source={emailLogo}
+          placeholder={'Email address'}
           secureTextEntry={false}
           autoCorrect={false}
           returnKeyType={'next'}
