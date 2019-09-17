@@ -85,8 +85,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     zIndex: 99,
     width: w(4),
-    height: h(4),
-    left: 35,
-    top: h(1),
+    height: h(3),
+    left: w(10),
+    top: h(1.7),
   },
 });

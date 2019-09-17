@@ -21,6 +21,7 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  KeyboardAvoidingView,
 } from 'react-native';
 import firebase from 'react-native-firebase';
 import {w, h, totalSize} from '../../../api/Dimensions';
@@ -140,47 +141,7 @@ export default class LoginForm extends Component {
 
   render() {
     return (
-      <View style={styles.container}>
-        {/* <View style={styles.inputWrapper}>
-          <Image
-            source={personLogo}
-            style={styles.inlineImg}
-            resizeMode="contain"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder={'Username'}
-            returnKeyType={'next'}
-            onChangeText={this.userNameInputHandler}
-            maxLength={25}
-            placeholderTextColor="white"
-            onSubmitEditing={({nativeEvent}) =>
-              this.focusPasswordAction(nativeEvent.text)
-            }
-          />
-        </View> */}
-        {/* <View style={styles.inputWrapper}>
-          <Image
-            source={password}
-            style={styles.inlineImg}
-            resizeMode="contain"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder={'Password'}
-            returnKeyType={'done'}
-            maxLength={25}
-            onChangeText={this.passwordInputHandler}
-            secureTextEntry={this.state.showPass}
-            placeholderTextColor="white"
-            ref={input => {
-              this.passwordInput = input;
-            }}
-            onSubmitEditing={({nativeEvent}) =>
-              this.passwordOnSubmitEditing(nativeEvent.text)
-            }
-          />
-        </View> */}
+      <KeyboardAvoidingView behavior="padding" style={styles.container}>
         {/* @Todo: resolve warning about ref in password input field*/}
         <InputField
           source={personLogo}
@@ -220,21 +181,22 @@ export default class LoginForm extends Component {
           onPress={this.showPass}>
           <Image source={eyeImg} style={styles.iconEye} resizeMode="contain" />
         </TouchableOpacity>
-      </View>
+      </KeyboardAvoidingView>
     );
   }
 }
 
 const styles = StyleSheet.create({
   container: {
-    height: h(25),
-    width: w(80),
-    marginTop: w(10),
+    height: h(26),
+    width: w(85),
     marginBottom: h(10),
     alignItems: 'center',
+    backgroundColor: '#446e46',
+    borderRadius: totalSize(2),
   },
   inputWrapper: {
-    flex: 1,
+    flex: 0,
   },
   input: {
     width: w(80),
@@ -248,9 +210,10 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     height: h(5),
-    width: w(80),
+    width: w(75),
     borderRadius: w(7),
-    backgroundColor: 'rgba(103,145,57,0.5)',
+    backgroundColor: 'rgba(123,184,126,0.5)',
+    marginBottom: h(1.5),
   },
   buttonText: {
     textAlign: 'center',
@@ -269,8 +232,8 @@ const styles = StyleSheet.create({
   },
   btnEye: {
     position: 'absolute',
-    top: 70,
-    right: 15,
+    top: h(10.5),
+    right: w(7),
   },
   inlineImg: {
     position: 'absolute',
