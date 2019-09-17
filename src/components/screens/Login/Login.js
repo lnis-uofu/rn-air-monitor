@@ -21,14 +21,11 @@ import {
   ScrollView,
 } from 'react-native';
 import LoginForm from './LoginForm';
+import RegisterForm from './RegisterForm';
 import {w, h, totalSize} from '../../../api/Dimensions';
 const companyLogo = require('../../../../assets/companylogo.png');
 const uLogo = require('../../../../assets/U_Logo.png');
-// const {UIManager} = NativeModules;
 const {width} = Dimensions.get('window');
-
-// UIManager.setLayoutAnimationEnabledExperimental &&
-//   UIManager.setLayoutAnimationEnabledExperimental(true);
 
 export default class Login extends Component {
   state = {
@@ -190,7 +187,7 @@ export default class Login extends Component {
                 translateY: event.nativeEvent.layout.height,
               })
             }>
-            <LoginForm />
+            <RegisterForm />
           </Animated.View>
         </KeyboardAvoidingView>
       </KeyboardAvoidingView>

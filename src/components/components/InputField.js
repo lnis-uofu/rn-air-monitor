@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
   inlineImg: {
     position: 'absolute',
     zIndex: 99,
-    width: w(4),
+    width: w(5),
     height: h(3),
     left: w(10),
     top: h(1.7),
