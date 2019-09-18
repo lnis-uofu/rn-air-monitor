@@ -28,16 +28,19 @@ const uLogo = require('../../../../assets/U_Logo.png');
 const {width} = Dimensions.get('window');
 
 export default class Login extends Component {
-  state = {
-    active: 0,
-    xTabOne: 0, //x co-ordinate of tab one
-    xTabTwo: 0, //x co-ordinate of tab two
-    translateX: new Animated.Value(0),
-    translateXTabOne: new Animated.Value(0),
-    translateXTabTwo: new Animated.Value(width),
-    translateY: -1000,
-  };
-
+  constructor() {
+    super();
+    this.state = {
+      active: 0,
+      xTabOne: 0, //x co-ordinate of tab one
+      xTabTwo: 0, //x co-ordinate of tab two
+      translateX: new Animated.Value(0),
+      translateXTabOne: new Animated.Value(0),
+      translateXTabTwo: new Animated.Value(width),
+      translateY: -1000,
+    };
+    this.registerForm = React.createRef();
+  }
   handleSlide = type => {
     let {
       active,
@@ -97,6 +100,16 @@ export default class Login extends Component {
     };
   };
 
+  /*
+  This is the call back function which is pass to RegisterForm
+  for handling the navigation back to LoginForm
+  after a successful registration
+  */
+  onRegistrationDone = () => {
+    this.setState({active: 0, xTabOne: 0});
+    this.handleSlide(this.state.xTabOne);
+  };
+
   textStyleChangeOnState = (currentState, activeState, color) => {
     return {
       color: currentState === activeState ? '#fff' : color,
@@ -114,7 +127,8 @@ export default class Login extends Component {
       translateXTabTwo,
       translateY,
     } = this.state;
-    console.log('Platform version ' + Platform.Version);
+    console.log('Render Platform version ' + Platform.Version);
+
     return (
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
         <View style={styles.logoContainer}>
@@ -168,7 +182,6 @@ export default class Login extends Component {
                 translateY: event.nativeEvent.layout.height,
               })
             }>
-            {/* <Text>Hi, from login</Text> */}
             <LoginForm />
           </Animated.View>
           <Animated.View
@@ -187,7 +200,7 @@ export default class Login extends Component {
                 translateY: event.nativeEvent.layout.height,
               })
             }>
-            <RegisterForm />
+            <RegisterForm onActionDone={this.onRegistrationDone} />
           </Animated.View>
         </KeyboardAvoidingView>
       </KeyboardAvoidingView>
