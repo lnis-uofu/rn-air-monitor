@@ -124,26 +124,21 @@ export default class LoginForm extends Component {
                 case 'auth/invalid-email':
                   alertMessage =
                     message + ' Email should be yourmail@example.com';
-                  console.warn('Invalid email address format.');
+                  console.log('Invalid email address format.');
                   break;
                 case 'auth/user-not-found':
                 case 'auth/wrong-password':
-                  console.warn('Invalid email address or password');
+                  console.log('Invalid email address or password');
                   break;
                 default:
                   alertMessage = 'Check your internet connection';
-                  console.warn('Check your internet connection');
+                  console.log('Check your internet connection');
               }
               resolve(null);
               Alert.alert(
                 'Login failed',
                 alertMessage,
                 [
-                  {
-                    text: 'Cancel',
-                    onPress: () => console.log('Cancel Pressed'),
-                    style: 'cancel',
-                  },
                   {
                     text: 'OK',
                     onPress: () => {
@@ -161,11 +156,6 @@ export default class LoginForm extends Component {
           'Login failed',
           'Username/password should not be empty.',
           [
-            {
-              text: 'Cancel',
-              onPress: () => console.log('Cancel Pressed'),
-              style: 'cancel',
-            },
             {
               text: 'OK',
               onPress: () => {
@@ -185,7 +175,6 @@ export default class LoginForm extends Component {
   render() {
     return (
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
-        {/* @Todo: resolve warning about ref in password input field*/}
         <InputField
           source={emailLogo}
           placeholder={'Email address'}
@@ -197,7 +186,7 @@ export default class LoginForm extends Component {
             this.focusPasswordAction(nativeEvent.text)
           }
           onChangeTextFunc={this.userNameInputHandler}
-          refProp={input => {
+          ref={input => {
             this.usernameInput = input;
           }}
         />
@@ -211,12 +200,12 @@ export default class LoginForm extends Component {
             this.passwordOnSubmitEditing(nativeEvent.text)
           }
           onChangeTextFunc={this.passwordInputHandler}
-          refProp={input => {
+          ref={input => {
             this.passwordInput = input;
           }}
         />
         <TouchableOpacity style={styles.buttonContainer} onPress={this.onPress}>
-          <Text style={styles.buttonText}> LOGIN </Text>
+          <Text style={styles.buttonText}>Login</Text>
         </TouchableOpacity>
         <TouchableOpacity
           activeOpacity={0.7}

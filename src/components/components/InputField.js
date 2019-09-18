@@ -19,6 +19,9 @@ export default class InputField extends Component {
     return this.state.text;
   };
 
+  focus = () => this.input.focus();
+  clear = () => this.input.clear();
+
   render() {
     return (
       <View style={styles.inputWrapper}>
@@ -31,11 +34,11 @@ export default class InputField extends Component {
           autoCapitalize={this.props.autoCapitalize}
           returnKeyType={this.props.returnKeyType}
           maxLength={this.props.maxLength}
-          placeholderTextColor="white"
+          placeholderTextColor="rgba(255,255,255,0.4)"
           underlineColorAndroid="transparent"
           onSubmitEditing={this.props.onSubmitEditingFunc}
           onChangeText={this.props.onChangeTextFunc}
-          ref={this.props.refProp}
+          ref={ref => (this.input = ref)}
         />
       </View>
     );
@@ -52,7 +55,6 @@ InputField.propTypes = {
   maxLength: PropTypes.number,
   onChangeTextFunc: PropTypes.func,
   onSubmitEditingFunc: PropTypes.func,
-  refProp: PropTypes.ref,
 };
 
 InputField.defaultProps = {
