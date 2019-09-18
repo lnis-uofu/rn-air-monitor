@@ -98,27 +98,68 @@ export default class LoginForm extends Component {
 
   /*
     @Todo:
-    - add async when login in
     - Show sign in progress: Loading gif while waiting authentication
   */
   onLogin = () => {
     const {username, password} = this.state;
     console.log('debug', username, password);
-    firebase
-      .auth()
-      .signInWithEmailAndPassword(username, password)
-      .then(user => {
-        console.log('logged IN!!!!!!!!!!!!!!!!!!!');
-        // If you need to do anything with the user, do it here
-        // The user will be logged in automatically by the
-        // `onAuthStateChanged` listener we set up in App.js earlier
-      })
-      .catch(error => {
-        const {code, message} = error;
-        // Works on both iOS and Android
-        Alert.alert(
+    return username.length > 0
+      ? new Promise(resolve => {
+          // In this case, there are some input from InputField, let validate those
+          firebase
+            .auth()
+            .signInWithEmailAndPassword(username, password)
+            .then(user => {
+              console.log('logged IN!!!!!!!!!!!!!!!!!!!');
+              this.setState({loading: false, user: user});
+              // If you need to do anything with the user, do it here
+              // The user will be logged in automatically by the
+              // `onAuthStateChanged` listener we set up in App.js earlier
+            })
+            .catch(error => {
+              const {code, message} = error;
+              let alertMessage = message;
+              // Works on both iOS and Android
+              switch (error.code) {
+                case 'auth/invalid-email':
+                  alertMessage =
+                    message + ' Email should be yourmail@example.com';
+                  console.warn('Invalid email address format.');
+                  break;
+                case 'auth/user-not-found':
+                case 'auth/wrong-password':
+                  console.warn('Invalid email address or password');
+                  break;
+                default:
+                  alertMessage = 'Check your internet connection';
+                  console.warn('Check your internet connection');
+              }
+              resolve(null);
+              Alert.alert(
+                'Login failed',
+                alertMessage,
+                [
+                  {
+                    text: 'Cancel',
+                    onPress: () => console.log('Cancel Pressed'),
+                    style: 'cancel',
+                  },
+                  {
+                    text: 'OK',
+                    onPress: () => {
+                      this.passwordInput.clear();
+                      this.usernameInput.focus();
+                    },
+                  },
+                ],
+                {cancelable: false},
+              );
+            });
+        })
+      : Alert.alert(
+          // in this case user has not enter anything to InputField
           'Login failed',
-          message,
+          'Username/password should not be empty.',
           [
             {
               text: 'Cancel',
@@ -129,14 +170,12 @@ export default class LoginForm extends Component {
               text: 'OK',
               onPress: () => {
                 this.passwordInput.clear();
-                this.usernameInput.clear();
                 this.usernameInput.focus();
               },
             },
           ],
           {cancelable: false},
         );
-      });
   };
 
   onPress = () => {
