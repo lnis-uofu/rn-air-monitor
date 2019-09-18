@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   Animated,
   Dimensions,
-  ScrollView,
+  Alert,
 } from 'react-native';
 import firebase from 'react-native-firebase';
 import {w, h, totalSize} from '../../../api/Dimensions';
@@ -31,8 +31,6 @@ export default class RegisterForm extends Component {
       password: '',
       showPass: true,
       press: false,
-      userInfo: null,
-      error: null,
       loading: true,
     };
     this.passwordInput = React.createRef();
@@ -43,6 +41,7 @@ export default class RegisterForm extends Component {
 
   userNameInputHandler = text => {
     this.setState({username: text});
+    console.log('username ' + this.state.username);
   };
   passwordInputHandler = text => {
     this.setState({password: text});
@@ -50,7 +49,7 @@ export default class RegisterForm extends Component {
   firstNameInputHandler = text => {
     this.setState({firstName: text});
   };
-  lastInputHandler = text => {
+  lastNameInputHandler = text => {
     this.setState({lastName: text});
   };
 
@@ -60,23 +59,24 @@ export default class RegisterForm extends Component {
       : this.setState({showPass: true, press: false});
   };
 
-  focusPasswordAction = username => {
+  focusPasswordAction = text => {
     this.setState({
-      username: username,
+      lastName: text,
     });
+    console.log('user email ', this.state.username);
     this.passwordInput.focus();
   };
 
-  focusFirstName = firstName => {
+  focusFirstName = text => {
     this.setState({
-      firstName: firstName,
+      userName: text,
     });
     this.firstNameInput.focus();
   };
 
-  focusLastName = lastName => {
+  focusLastName = text => {
     this.setState({
-      lastName: lastName,
+      firstName: text,
     });
     this.lastNameInput.focus();
   };
@@ -100,11 +100,101 @@ export default class RegisterForm extends Component {
     - Check first and last name should not be empty
     - Show progress: Loading gif while waiting authentication
     - Navigate back to login tab for login
+    - Put user info into fire store
   */
   onPress = () => {
     const {username, password, firstName, lastName} = this.state;
     console.log(username + '/' + password + '/' + firstName + '/' + lastName);
-    firebase.auth().createUserWithEmailAndPassword(username, password);
+    if (username.length === 0 || password.length === 0) {
+      Alert.alert(
+        // in this case user has not enter anything to InputField
+        'Create fail!',
+        'Username/password should not be empty.',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              this.usernameInput.focus();
+            },
+          },
+        ],
+        {cancelable: false},
+      );
+      return;
+    }
+    if (firstName.length === 0 || lastName.length === 0) {
+      Alert.alert(
+        // in this case user has not enter anything to InputField
+        'Create fail!',
+        'firstName/lastName should not be empty.',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              this.firstNameInput.focus();
+            },
+          },
+        ],
+        {cancelable: false},
+      );
+      return;
+    }
+    firebase
+      .auth()
+      .createUserWithEmailAndPassword(username, password)
+      .then(userCredential => {
+        // Success
+        console.log('Created successful with ' + userCredential.user.email);
+        // DO some other things
+        Alert.alert(
+          // Notice user about successfully created
+          'User created!',
+          'User email ' + username,
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                this.props.onActionDone();
+              },
+            },
+          ],
+          {cancelable: false},
+        );
+      })
+      .catch(error => {
+        const {code, message} = error;
+        let alertMessage = message;
+        switch (code) {
+          case 'auth/invalid-email':
+            alertMessage = message + ' Email should be yourmail@example.com';
+            console.log(code + ' Invalid email address format.');
+            break;
+          case 'auth/email-already-in-use':
+            alertMessage = message + username;
+            console.log('email-already-in-use');
+            break;
+          case 'auth/weak-password':
+            alertMessage = message + password;
+            console.log('weak-password');
+            break;
+          default:
+            alertMessage = 'Check your internet connection!';
+            console.log(code + ' Check your internet connection');
+        }
+        Alert.alert(
+          'Create failed',
+          alertMessage,
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                this.usernameInput.focus();
+              },
+            },
+          ],
+          {cancelable: false},
+        );
+      });
   };
   render() {
     return (
@@ -120,7 +210,7 @@ export default class RegisterForm extends Component {
             this.focusFirstName(nativeEvent.text)
           }
           onChangeTextFunc={this.userNameInputHandler}
-          refProp={input => {
+          ref={input => {
             this.usernameInput = input;
           }}
         />
@@ -135,7 +225,7 @@ export default class RegisterForm extends Component {
             this.focusLastName(nativeEvent.text)
           }
           onChangeTextFunc={this.firstNameInputHandler}
-          refProp={input => {
+          ref={input => {
             this.firstNameInput = input;
           }}
         />
@@ -150,7 +240,7 @@ export default class RegisterForm extends Component {
             this.focusPasswordAction(nativeEvent.text)
           }
           onChangeTextFunc={this.lastNameInputHandler}
-          refProp={input => {
+          ref={input => {
             this.lastNameInput = input;
           }}
         />
@@ -164,7 +254,7 @@ export default class RegisterForm extends Component {
             this.passwordOnSubmitEditing(nativeEvent.text)
           }
           onChangeTextFunc={this.passwordInputHandler}
-          refProp={input => {
+          ref={input => {
             this.passwordInput = input;
           }}
         />
@@ -182,6 +272,9 @@ export default class RegisterForm extends Component {
   }
 }
 
+RegisterForm.propTypes = {
+  onActionDone: PropTypes.func,
+};
 const styles = StyleSheet.create({
   container: {
     height: h(37),
