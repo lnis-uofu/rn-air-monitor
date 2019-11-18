@@ -43,6 +43,8 @@ https://docs.google.com/document/d/1i_dgn-NiY0AjQOG5gHsbp0zeadPwx7iXxpTm8IbkyHY/
 - Command `react-native run-android` on Mac OS may run you into issue. Please refer this link to resolve that
 - Send Ctrl + M to Android Virtual Device:
 'adb shell input keyevent 82'
+- refer https://stackoverflow.com/questions/52919945/how-to-pass-extra-auth-parameters-for-firestore-rules-authentication-react-nati to set rules for CRUD actions in firestore
+
 - Google-services.json and debug.keystore are the 2 important files. We need those files for Google service authentication to interact with firebase services. Please contact ntdquang1412@gmail.com or tbecnel14@gmail.com for these files as well as permission to the project on Google Cloud Platform
 - Those 2 files should be under ./android/app/
 - Without those files, you will not be able to build the Android project.

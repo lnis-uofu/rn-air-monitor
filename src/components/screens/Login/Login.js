@@ -18,12 +18,10 @@ import {
   TouchableOpacity,
   Animated,
   Dimensions,
-  ScrollView,
 } from 'react-native';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import {w, h, totalSize} from '../../../api/Dimensions';
-const companyLogo = require('../../../../assets/companylogo.png');
 const uLogo = require('../../../../assets/U_Logo.png');
 const {width} = Dimensions.get('window');
 
@@ -108,6 +106,10 @@ export default class Login extends Component {
   onRegistrationDone = () => {
     this.setState({active: 0, xTabOne: 0});
     this.handleSlide(this.state.xTabOne);
+  };
+
+  isLoading = () => {
+    this.setState({isLoading: true});
   };
 
   textStyleChangeOnState = (currentState, activeState, color) => {
