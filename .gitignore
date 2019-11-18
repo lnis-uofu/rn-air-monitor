@@ -60,3 +60,4 @@ buck-out/
 
 # Credentials
 google-services.json
+ios/GoogleService-Info.plist

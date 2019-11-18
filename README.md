@@ -23,16 +23,34 @@ ${JAVA_HOME} = D:\Program Files\Android\Android Studio\jre\jre
         compileSdkVersion = 28
         targetSdkVersion = 28
         supportLibVersion = "28.0.0"
-4. run for android and iOS
-"npm run run-android" or "react-native run-android" - npm script for easier run from IDE
+        Google play service version: 49 
+4. run for android
+"npm run android" or "react-native run-android" - npm script for the convenient of running from VSCODE
 
-*IDE used:*
+5. Run on iOS
+- under ios directory, from terminal, run command "pod install"
+- open .xcworkspace file
+- Choose build destination
+- Hit "Build and Run"
+Note: refer this document for more information to build and run on iOS
+https://docs.google.com/document/d/1i_dgn-NiY0AjQOG5gHsbp0zeadPwx7iXxpTm8IbkyHY/edit?usp=sharing
+
+**IDE used:**
 - VSCode for react-native javascript
 - Android studio for android development and Android Virtual Device (AVD)
 
-**Notes:**
+**Notes for android:**
+- Command `react-native run-android` on Mac OS may run you into issue. Please refer this link to resolve that
 - Send Ctrl + M to Android Virtual Device:
 'adb shell input keyevent 82'
+- Google-services.json and debug.keystore are the 2 important files. We need those files for Google service authentication to interact with firebase services. Please contact ntdquang1412@gmail.com or tbecnel14@gmail.com for these files as well as permission to the project on Google Cloud Platform
+- Those 2 files should be under ./android/app/
+- Without those files, you will not be able to build the Android project.
+
+**Note for iOS**
+- GoogleService-Info.plist. We need this file for Google service authentication to interact with firebase services. Please contact ntdquang1412@gmail.com or tbecnel14@gmail.com for these files as well as permission to the project on Google Cloud Platform
+- This file should be placed under ./ios/
+- Without this file, you will not be able to build the iOS project.
 
 **References:**
 Set up react native development
