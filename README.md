@@ -33,7 +33,7 @@ ${JAVA_HOME} = D:\Program Files\Android\Android Studio\jre\jre
 **Notes:**
 - Send Ctrl + M to Android Virtual Device:
 'adb shell input keyevent 82'
-
+- refer https://stackoverflow.com/questions/52919945/how-to-pass-extra-auth-parameters-for-firestore-rules-authentication-react-nati to set rules for CRUD actions in firestore
 **References:**
 Set up react native development
 https://facebook.github.io/react-native/docs/getting-started

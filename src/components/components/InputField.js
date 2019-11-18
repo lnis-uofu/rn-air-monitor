@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet, View, Image, TextInput, Text} from 'react-native';
+import {StyleSheet, View, Image, TextInput} from 'react-native';
 import {w, h} from '../../api/Dimensions';
 
 export default class InputField extends Component {

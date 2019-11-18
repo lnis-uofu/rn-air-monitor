@@ -1,19 +1,17 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import InputField from '../../components/InputField';
+import Loader from '../../components/Loader';
 import {
   StyleSheet,
-  View,
   KeyboardAvoidingView,
   Text,
   Image,
-  Platform,
   TouchableOpacity,
-  Animated,
-  Dimensions,
   Alert,
 } from 'react-native';
 import firebase from 'react-native-firebase';
+
 import {w, h, totalSize} from '../../../api/Dimensions';
 const passwordLogo = require('../../../../assets/password.png');
 const eyeImg = require('../../../../assets/eye_black.png');
@@ -31,7 +29,7 @@ export default class RegisterForm extends Component {
       password: '',
       showPass: true,
       press: false,
-      loading: true,
+      loading: false,
     };
     this.passwordInput = React.createRef();
     this.usernameInput = React.createRef();
@@ -82,7 +80,10 @@ export default class RegisterForm extends Component {
   };
 
   passwordOnSubmitEditing = text => {
-    this.onPress();
+    this.setState({
+      password: text,
+    });
+    this.registerOnPress();
   };
 
   componentDidMount() {
@@ -94,15 +95,35 @@ export default class RegisterForm extends Component {
     });
   }
 
+  putUserInfoToFireStore = async (userEmail, firstName, lastName) => {
+    console.log(
+      `going to put '${userEmail} ${firstName} ${lastName}' to database`,
+    );
+    const refUser = await firebase
+      .firestore()
+      .collection('users')
+      .doc(userEmail);
+    console.log('run transaction');
+    await firebase.firestore().runTransaction(async transaction => {
+      console.log('Get user info!');
+      const doc = await transaction.get(refUser);
+
+      // if it does not exist set the population to one
+      if (!doc.exists) {
+        console.log('Set user name');
+        transaction.set(refUser, {
+          first_name: firstName,
+          last_name: lastName,
+          email: userEmail,
+        }); // return the new value so we know what the new population is
+        return 1;
+      }
+    });
+  };
   /*
     @Todo:
-    - add async when creating user
-    - Check first and last name should not be empty
-    - Show progress: Loading gif while waiting authentication
-    - Navigate back to login tab for login
-    - Put user info into fire store
   */
-  onPress = () => {
+  registerOnPress = () => {
     const {username, password, firstName, lastName} = this.state;
     console.log(username + '/' + password + '/' + firstName + '/' + lastName);
     if (username.length === 0 || password.length === 0) {
@@ -139,14 +160,19 @@ export default class RegisterForm extends Component {
       );
       return;
     }
+    this.setState({loading: true});
     firebase
       .auth()
       .createUserWithEmailAndPassword(username, password)
-      .then(userCredential => {
+      .then(async userCredential => {
         // Success
-        console.log('Created successful with ' + userCredential.user.email);
+        await console.log(
+          'Created successful with ' + userCredential.user.email,
+        );
+        this.setState({loading: false});
+        this.putUserInfoToFireStore(username, firstName, lastName);
         // DO some other things
-        Alert.alert(
+        await Alert.alert(
           // Notice user about successfully created
           'User created!',
           'User email ' + username,
@@ -162,6 +188,7 @@ export default class RegisterForm extends Component {
         );
       })
       .catch(error => {
+        this.setState({loading: false});
         const {code, message} = error;
         let alertMessage = message;
         switch (code) {
@@ -199,6 +226,11 @@ export default class RegisterForm extends Component {
   render() {
     return (
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
+        <Loader
+          isLoading={this.state.loading}
+          indicatorSize="large"
+          indicatorColor="#446e46"
+        />
         <InputField
           source={emailLogo}
           placeholder={'Email address'}
@@ -258,7 +290,9 @@ export default class RegisterForm extends Component {
             this.passwordInput = input;
           }}
         />
-        <TouchableOpacity style={styles.buttonContainer} onPress={this.onPress}>
+        <TouchableOpacity
+          style={styles.buttonContainer}
+          onPress={this.registerOnPress}>
           <Text style={styles.buttonText}> Register User </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -274,14 +308,12 @@ export default class RegisterForm extends Component {
 
 RegisterForm.propTypes = {
   onActionDone: PropTypes.func,
+  loadingState: PropTypes.func,
 };
 const styles = StyleSheet.create({
   container: {
     height: h(37),
     width: w(85),
-    // marginBottom: h(10),
-    // alignContent: 'center',
-    // alignSelf: 'center',
     alignItems: 'center',
     backgroundColor: '#446e46',
     borderRadius: totalSize(2),

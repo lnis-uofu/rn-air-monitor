@@ -16,7 +16,6 @@
 import React, {Component} from 'react';
 import {
   StyleSheet,
-  View,
   Text,
   TouchableOpacity,
   Image,
@@ -26,6 +25,7 @@ import {
 import firebase from 'react-native-firebase';
 import {w, h, totalSize} from '../../../api/Dimensions';
 import InputField from '../../components/InputField.js';
+import Loader from '../../components/Loader';
 const passwordLogo = require('../../../../assets/password.png');
 const eyeImg = require('../../../../assets/eye_black.png');
 const emailLogo = require('../../../../assets/email.png');
@@ -40,7 +40,7 @@ export default class LoginForm extends Component {
       press: false,
       userInfo: null,
       error: null,
-      loading: true,
+      loading: false,
     };
     this.passwordInput = React.createRef();
     this.usernameInput = React.createRef();
@@ -105,7 +105,7 @@ export default class LoginForm extends Component {
     console.log('debug', username, password);
     return username.length > 0
       ? new Promise(resolve => {
-          // In this case, there are some input from InputField, let validate those
+          this.setState({loading: true});
           firebase
             .auth()
             .signInWithEmailAndPassword(username, password)
@@ -119,6 +119,7 @@ export default class LoginForm extends Component {
             .catch(error => {
               const {code, message} = error;
               let alertMessage = message;
+              this.setState({loading: false});
               // Works on both iOS and Android
               switch (error.code) {
                 case 'auth/invalid-email':
@@ -175,6 +176,11 @@ export default class LoginForm extends Component {
   render() {
     return (
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
+        <Loader
+          isLoading={this.state.loading}
+          indicatorSize="large"
+          indicatorColor="#446e46"
+        />
         <InputField
           source={emailLogo}
           placeholder={'Email address'}
