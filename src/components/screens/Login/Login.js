@@ -26,6 +26,8 @@ const uLogo = require('../../../../assets/U_Logo.png');
 const {width} = Dimensions.get('window');
 
 export default class Login extends Component {
+  _isMounted = false;
+
   constructor() {
     super();
     this.state = {
@@ -36,9 +38,25 @@ export default class Login extends Component {
       translateXTabOne: new Animated.Value(0),
       translateXTabTwo: new Animated.Value(width),
       translateY: -1000,
+      isLoggedIn: false,
     };
     this.registerForm = React.createRef();
   }
+
+  _setState = object => {
+    if (this._isMounted) {
+      this.setState(object);
+    }
+  };
+
+  componentDidMount() {
+    this._isMounted = true;
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false;
+  }
+
   handleSlide = type => {
     let {
       active,
@@ -104,12 +122,12 @@ export default class Login extends Component {
   after a successful registration
   */
   onRegistrationDone = () => {
-    this.setState({active: 0, xTabOne: 0});
+    this._setState({active: 0, xTabOne: 0});
     this.handleSlide(this.state.xTabOne);
   };
 
   isLoading = () => {
-    this.setState({isLoading: true});
+    this._setState({isLoading: true});
   };
 
   textStyleChangeOnState = (currentState, activeState, color) => {
@@ -142,7 +160,7 @@ export default class Login extends Component {
           <TouchableOpacity
             style={styles.tabStyle}
             onLayout={event =>
-              this.setState({
+              this._setState({
                 xTabOne: event.nativeEvent.layout.x,
               })
             }
@@ -157,7 +175,7 @@ export default class Login extends Component {
           <TouchableOpacity
             style={styles.tabStyle}
             onLayout={event =>
-              this.setState({
+              this._setState({
                 xTabTwo: event.nativeEvent.layout.x,
               })
             }
@@ -180,7 +198,7 @@ export default class Login extends Component {
               ],
             }}
             onLayout={event =>
-              this.setState({
+              this._setState({
                 translateY: event.nativeEvent.layout.height,
               })
             }>
@@ -198,7 +216,7 @@ export default class Login extends Component {
               ],
             }}
             onLayout={event =>
-              this.setState({
+              this._setState({
                 translateY: event.nativeEvent.layout.height,
               })
             }>

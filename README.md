@@ -34,6 +34,7 @@ ${JAVA_HOME} = D:\Program Files\Android\Android Studio\jre\jre
 - Send Ctrl + M to Android Virtual Device:
 'adb shell input keyevent 82'
 - refer https://stackoverflow.com/questions/52919945/how-to-pass-extra-auth-parameters-for-firestore-rules-authentication-react-nati to set rules for CRUD actions in firestore
+
 **References:**
 Set up react native development
 https://facebook.github.io/react-native/docs/getting-started
@@ -43,3 +44,6 @@ https://rnfirebase.io/docs/v5.x.x/installation/initial-setup#Creating-a-new-proj
 
 Install react-native-firebase module for project (search for @react-native-firebase in code to have more details)
 https://rnfirebase.io/docs/v5.x.x/getting-started
+
+Install react navigation
+https://reactnavigation.org/docs/en/getting-started.html

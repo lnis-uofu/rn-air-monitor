@@ -12,7 +12,7 @@ export default class InputField extends Component {
   }
 
   setInputValue = text => {
-    this.setState({text: text});
+    this._setState({text: text});
   };
 
   getInputValue = () => {

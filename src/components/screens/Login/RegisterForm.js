@@ -19,6 +19,7 @@ const personLogo = require('../../../../assets/person.png');
 const emailLogo = require('../../../../assets/email.png');
 
 export default class RegisterForm extends Component {
+  _isMounted = false;
   constructor() {
     super();
     this.state = {
@@ -37,28 +38,41 @@ export default class RegisterForm extends Component {
     this.lastNameInput = React.createRef();
   }
 
+  _setState = object => {
+    if (this._isMounted) {
+      this.setState(object);
+    }
+  };
+
+  componentDidMount() {
+    this._isMounted = true;
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false;
+  }
   userNameInputHandler = text => {
-    this.setState({username: text});
+    this._setState({username: text});
     console.log('username ' + this.state.username);
   };
   passwordInputHandler = text => {
-    this.setState({password: text});
+    this._setState({password: text});
   };
   firstNameInputHandler = text => {
-    this.setState({firstName: text});
+    this._setState({firstName: text});
   };
   lastNameInputHandler = text => {
-    this.setState({lastName: text});
+    this._setState({lastName: text});
   };
 
   showPass = () => {
     this.state.press === false
-      ? this.setState({showPass: false, press: true})
-      : this.setState({showPass: true, press: false});
+      ? this._setState({showPass: false, press: true})
+      : this._setState({showPass: true, press: false});
   };
 
   focusPasswordAction = text => {
-    this.setState({
+    this._setState({
       lastName: text,
     });
     console.log('user email ', this.state.username);
@@ -66,34 +80,25 @@ export default class RegisterForm extends Component {
   };
 
   focusFirstName = text => {
-    this.setState({
+    this._setState({
       userName: text,
     });
     this.firstNameInput.focus();
   };
 
   focusLastName = text => {
-    this.setState({
+    this._setState({
       firstName: text,
     });
     this.lastNameInput.focus();
   };
 
   passwordOnSubmitEditing = text => {
-    this.setState({
+    this._setState({
       password: text,
     });
     this.registerOnPress();
   };
-
-  componentDidMount() {
-    this.authSubscription = firebase.auth().onAuthStateChanged(user => {
-      this.setState({
-        loading: false,
-        user,
-      });
-    });
-  }
 
   putUserInfoToFireStore = async (userEmail, firstName, lastName) => {
     console.log(
@@ -160,7 +165,7 @@ export default class RegisterForm extends Component {
       );
       return;
     }
-    this.setState({loading: true});
+    this._setState({loading: true});
     firebase
       .auth()
       .createUserWithEmailAndPassword(username, password)
@@ -169,7 +174,7 @@ export default class RegisterForm extends Component {
         await console.log(
           'Created successful with ' + userCredential.user.email,
         );
-        this.setState({loading: false});
+        this._setState({loading: false});
         this.putUserInfoToFireStore(username, firstName, lastName);
         // DO some other things
         await Alert.alert(
@@ -188,7 +193,7 @@ export default class RegisterForm extends Component {
         );
       })
       .catch(error => {
-        this.setState({loading: false});
+        this._setState({loading: false});
         const {code, message} = error;
         let alertMessage = message;
         switch (code) {

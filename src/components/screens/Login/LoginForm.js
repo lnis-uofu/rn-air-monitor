@@ -31,6 +31,7 @@ const eyeImg = require('../../../../assets/eye_black.png');
 const emailLogo = require('../../../../assets/email.png');
 
 export default class LoginForm extends Component {
+  _isMounted = false;
   constructor() {
     super();
     this.state = {
@@ -38,7 +39,7 @@ export default class LoginForm extends Component {
       password: '',
       showPass: true,
       press: false,
-      userInfo: null,
+      user: null,
       error: null,
       loading: false,
     };
@@ -46,54 +47,44 @@ export default class LoginForm extends Component {
     this.usernameInput = React.createRef();
   }
 
+  _setState = object => {
+    if (this._isMounted) {
+      this.setState(object);
+    }
+  };
   userNameInputHandler = text => {
-    this.setState({username: text});
+    this._setState({username: text});
   };
   passwordInputHandler = text => {
-    this.setState({password: text});
+    this._setState({password: text});
   };
 
   showPass = () => {
     this.state.press === false
-      ? this.setState({showPass: false, press: true})
-      : this.setState({showPass: true, press: false});
+      ? this._setState({showPass: false, press: true})
+      : this._setState({showPass: true, press: false});
   };
 
   focusPasswordAction = username => {
-    this.setState({
+    this._setState({
       username: username,
     });
     this.passwordInput.focus();
   };
 
   passwordOnSubmitEditing = password => {
-    this.setState({
+    this._setState({
       password: password,
     });
     this.onPress();
   };
 
-  /**
-   * When the App component mounts, we listen for any authentication
-   * state changes in Firebase.
-   * Once subscribed, the 'user' parameter will either be null
-   * (logged out) or an Object (logged in)
-   */
   componentDidMount() {
-    this.authSubscription = firebase.auth().onAuthStateChanged(user => {
-      this.setState({
-        loading: false,
-        user,
-      });
-    });
+    this._isMounted = true;
   }
 
-  /**
-   * Don't forget to stop listening for authentication state changes
-   * when the component unmounts.
-   */
   componentWillUnmount() {
-    this.authSubscription();
+    this._isMounted = false;
   }
 
   /*
@@ -105,13 +96,13 @@ export default class LoginForm extends Component {
     console.log('debug', username, password);
     return username.length > 0
       ? new Promise(resolve => {
-          this.setState({loading: true});
+          this._setState({loading: true});
           firebase
             .auth()
             .signInWithEmailAndPassword(username, password)
             .then(user => {
               console.log('logged IN!!!!!!!!!!!!!!!!!!!');
-              this.setState({loading: false, user: user});
+              this._setState({loading: false, user: user});
               // If you need to do anything with the user, do it here
               // The user will be logged in automatically by the
               // `onAuthStateChanged` listener we set up in App.js earlier
@@ -119,7 +110,6 @@ export default class LoginForm extends Component {
             .catch(error => {
               const {code, message} = error;
               let alertMessage = message;
-              this.setState({loading: false});
               // Works on both iOS and Android
               switch (error.code) {
                 case 'auth/invalid-email':
@@ -150,6 +140,7 @@ export default class LoginForm extends Component {
                 ],
                 {cancelable: false},
               );
+              this._setState({loading: false});
             });
         })
       : Alert.alert(
