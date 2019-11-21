@@ -13,6 +13,7 @@ import {
 import firebase from 'react-native-firebase';
 
 import {w, h, totalSize} from '../../../api/Dimensions';
+import {themeColor} from '../../../../App';
 const passwordLogo = require('../../../../assets/password.png');
 const eyeImg = require('../../../../assets/eye_black.png');
 const personLogo = require('../../../../assets/person.png');
@@ -234,7 +235,7 @@ export default class RegisterForm extends Component {
         <Loader
           isLoading={this.state.loading}
           indicatorSize="large"
-          indicatorColor="#446e46"
+          indicatorColor={themeColor.bright}
         />
         <InputField
           source={emailLogo}
@@ -243,6 +244,7 @@ export default class RegisterForm extends Component {
           autoCorrect={false}
           returnKeyType={'next'}
           maxLength={25}
+          textFieldBoxColor={themeColor.bright}
           onSubmitEditingFunc={({nativeEvent}) =>
             this.focusFirstName(nativeEvent.text)
           }
@@ -258,6 +260,7 @@ export default class RegisterForm extends Component {
           autoCorrect={false}
           returnKeyType={'next'}
           maxLength={25}
+          textFieldBoxColor={themeColor.bright}
           onSubmitEditingFunc={({nativeEvent}) =>
             this.focusLastName(nativeEvent.text)
           }
@@ -273,6 +276,7 @@ export default class RegisterForm extends Component {
           autoCorrect={false}
           returnKeyType={'next'}
           maxLength={25}
+          textFieldBoxColor={themeColor.bright}
           onSubmitEditingFunc={({nativeEvent}) =>
             this.focusPasswordAction(nativeEvent.text)
           }
@@ -287,6 +291,7 @@ export default class RegisterForm extends Component {
           secureTextEntry={this.state.showPass}
           returnKeyType={'done'}
           maxLength={25}
+          textFieldBoxColor={themeColor.bright}
           onSubmitEditingFunc={({nativeEvent}) =>
             this.passwordOnSubmitEditing(nativeEvent.text)
           }
@@ -313,7 +318,6 @@ export default class RegisterForm extends Component {
 
 RegisterForm.propTypes = {
   onActionDone: PropTypes.func,
-  loadingState: PropTypes.func,
 };
 const styles = StyleSheet.create({
   container: {

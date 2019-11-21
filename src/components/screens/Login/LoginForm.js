@@ -16,6 +16,7 @@
 import React, {Component} from 'react';
 import {
   StyleSheet,
+  View,
   Text,
   TouchableOpacity,
   Image,
@@ -26,6 +27,7 @@ import firebase from 'react-native-firebase';
 import {w, h, totalSize} from '../../../api/Dimensions';
 import InputField from '../../components/InputField.js';
 import Loader from '../../components/Loader';
+import {themeColor} from '../../../../App';
 const passwordLogo = require('../../../../assets/password.png');
 const eyeImg = require('../../../../assets/eye_black.png');
 const emailLogo = require('../../../../assets/email.png');
@@ -35,13 +37,15 @@ export default class LoginForm extends Component {
   constructor() {
     super();
     this.state = {
-      username: '',
-      password: '',
+      username: 'ntdquang1412@gmail.com',
+      password: 'empty',
       showPass: true,
       press: false,
       user: null,
       error: null,
       loading: false,
+      usernameInputColor: themeColor.bright,
+      pwdInputColor: '#ffffff',
     };
     this.passwordInput = React.createRef();
     this.usernameInput = React.createRef();
@@ -53,7 +57,7 @@ export default class LoginForm extends Component {
     }
   };
   userNameInputHandler = text => {
-    this._setState({username: text});
+    this._setState({username: text, usernameInputColor: themeColor.bright});
   };
   passwordInputHandler = text => {
     this._setState({password: text});
@@ -109,6 +113,7 @@ export default class LoginForm extends Component {
             })
             .catch(error => {
               const {code, message} = error;
+              this._setState({loading: false});
               let alertMessage = message;
               // Works on both iOS and Android
               switch (error.code) {
@@ -140,7 +145,6 @@ export default class LoginForm extends Component {
                 ],
                 {cancelable: false},
               );
-              this._setState({loading: false});
             });
         })
       : Alert.alert(
@@ -164,64 +168,130 @@ export default class LoginForm extends Component {
     this.onLogin();
   };
 
+  forgotPassword = () => {
+    if (this.state.username.length === 0) {
+      console.warn('User email is not entered');
+      this._setState({usernameInputColor: '#ff0000'});
+      return;
+    }
+    const yourEmail = this.state.username;
+    return new Promise(resolve => {
+      firebase
+        .auth()
+        .sendPasswordResetEmail(yourEmail)
+        .then(() => {
+          Alert.alert(`Please check for new email!! '${yourEmail}'`);
+        })
+        .catch(e => {
+          console.log(e);
+          let alertMessage = e.message;
+          // Works on both iOS and Android
+          switch (e.code) {
+            case 'auth/invalid-email':
+              alertMessage = `'${yourEmail}' Email should be email@example.com`;
+              this._setState({usernameInputColor: '#ff0000'});
+              console.log('Invalid email address format.');
+              break;
+            case 'auth/user-not-found':
+              alertMessage = `'${yourEmail}' is not found from system`;
+              this._setState({usernameInputColor: '#ff0000'});
+              console.log('Email address not found');
+              break;
+            default:
+              alertMessage = 'Check your internet connection';
+              console.log('Check your internet connection');
+          }
+          resolve(null);
+          Alert.alert(alertMessage);
+        });
+    });
+  };
+
+  // @Todo
+  // Add red indicator for password when incorrect pwd was entered. Look at username field for reference
   render() {
     return (
-      <KeyboardAvoidingView behavior="padding" style={styles.container}>
-        <Loader
-          isLoading={this.state.loading}
-          indicatorSize="large"
-          indicatorColor="#446e46"
-        />
-        <InputField
-          source={emailLogo}
-          placeholder={'Email address'}
-          secureTextEntry={false}
-          autoCorrect={false}
-          returnKeyType={'next'}
-          maxLength={25}
-          onSubmitEditingFunc={({nativeEvent}) =>
-            this.focusPasswordAction(nativeEvent.text)
-          }
-          onChangeTextFunc={this.userNameInputHandler}
-          ref={input => {
-            this.usernameInput = input;
-          }}
-        />
-        <InputField
-          source={passwordLogo}
-          placeholder={'Password'}
-          secureTextEntry={this.state.showPass}
-          returnKeyType={'done'}
-          maxLength={25}
-          onSubmitEditingFunc={({nativeEvent}) =>
-            this.passwordOnSubmitEditing(nativeEvent.text)
-          }
-          onChangeTextFunc={this.passwordInputHandler}
-          ref={input => {
-            this.passwordInput = input;
-          }}
-        />
-        <TouchableOpacity style={styles.buttonContainer} onPress={this.onPress}>
-          <Text style={styles.buttonText}>Login</Text>
-        </TouchableOpacity>
+      <View style={styles.container}>
+        <KeyboardAvoidingView behavior="padding" style={styles.loginContainer}>
+          <Loader
+            isLoading={this.state.loading}
+            indicatorSize="large"
+            indicatorColor="#446e46"
+          />
+          <InputField
+            source={emailLogo}
+            placeholder={'Email address'}
+            secureTextEntry={false}
+            autoCorrect={false}
+            returnKeyType={'next'}
+            maxLength={25}
+            textFieldBoxColor={this.state.usernameInputColor}
+            onSubmitEditingFunc={({nativeEvent}) =>
+              this.focusPasswordAction(nativeEvent.text)
+            }
+            onChangeTextFunc={this.userNameInputHandler}
+            ref={input => {
+              this.usernameInput = input;
+            }}
+          />
+          <InputField
+            source={passwordLogo}
+            placeholder={'Password'}
+            secureTextEntry={this.state.showPass}
+            returnKeyType={'done'}
+            maxLength={25}
+            textFieldBoxColor={this.state.usernameInputColor}
+            onSubmitEditingFunc={({nativeEvent}) =>
+              this.passwordOnSubmitEditing(nativeEvent.text)
+            }
+            onChangeTextFunc={this.passwordInputHandler}
+            ref={input => {
+              this.passwordInput = input;
+            }}
+          />
+          <TouchableOpacity
+            style={styles.buttonContainer}
+            onPress={this.onPress}>
+            <Text style={styles.buttonText}>Login</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={styles.btnEye}
+            onPress={this.showPass}>
+            <Image
+              source={eyeImg}
+              style={styles.iconEye}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        </KeyboardAvoidingView>
         <TouchableOpacity
-          activeOpacity={0.7}
-          style={styles.btnEye}
-          onPress={this.showPass}>
-          <Image source={eyeImg} style={styles.iconEye} resizeMode="contain" />
+          // style={styles.forgotButton}
+          onPress={() => {
+            console.log('Damn, forgot again');
+            this.forgotPassword();
+          }}>
+          <Text style={styles.forgotText}>Forgot your password?</Text>
         </TouchableOpacity>
-      </KeyboardAvoidingView>
+      </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
+  loginContainer: {
+    height: h(26),
+    width: w(85),
+    marginBottom: h(2),
+    alignItems: 'center',
+    backgroundColor: '#446e46',
+    borderRadius: totalSize(2),
+  },
   container: {
     height: h(26),
     width: w(85),
     marginBottom: h(10),
     alignItems: 'center',
-    backgroundColor: '#446e46',
     borderRadius: totalSize(2),
   },
   inputWrapper: {
@@ -244,10 +314,24 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(123,184,126,0.5)',
     marginBottom: h(1.5),
   },
+  forgotButton: {
+    height: h(5),
+    width: w(75),
+    borderRadius: w(7),
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    marginTop: h(3),
+    marginBottom: h(3),
+  },
   buttonText: {
     textAlign: 'center',
     fontSize: totalSize(2.5),
     color: 'white',
+    paddingTop: h(0.5),
+  },
+  forgotText: {
+    textAlign: 'center',
+    fontSize: totalSize(1.5),
+    color: '#fff',
     paddingTop: h(0.5),
   },
   imageIcon: {

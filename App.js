@@ -14,6 +14,11 @@ import HomeScreen from './src/components/screens/Home/HomeScreen';
 import firebase from 'react-native-firebase';
 import {createAppContainer} from 'react-navigation';
 import {createStackNavigator} from 'react-navigation-stack';
+export const themeColor = {
+  bright: '#C5FBD0',
+  dark: '#325C3C',
+  error: '#ff0000',
+};
 
 const RootStack = createStackNavigator(
   {
@@ -53,11 +58,13 @@ export default class App extends React.Component {
   }
   render() {
     console.log('User info ', this.state.user);
-    if (this.state.user == null) {
-      return <Login />;
-    } else {
-      console.log('Logged in with user ' + this.state.user);
-      return <HomeScreen />;
-    }
+    return <HomeScreen />;
+
+    // if (this.state.user == null) {
+    //   return <Login />;
+    // } else {
+    //   console.log('Logged in with user ' + this.state.user);
+    //   return <HomeScreen />;
+    // }
   }
 }

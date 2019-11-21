@@ -23,6 +23,7 @@ import {
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import {w, h, totalSize} from '../../../api/Dimensions';
+import {themeColor} from '../../../../App'
 const uLogo = require('../../../../assets/U_Logo.png');
 const backGroundImage = require('../../../../assets/green_gradient.jpg');
 const {width} = Dimensions.get('window');
@@ -105,7 +106,7 @@ export default class Login extends Component {
       top: 0,
       left: 0,
       borderBottomWidth: 2,
-      borderBottomColor: '#618f63',
+      borderBottomColor: themeColor.bright,
       borderRadius: 4,
       transform: [{translateX: position}],
     };
@@ -127,7 +128,7 @@ export default class Login extends Component {
 
   textStyleChangeOnState = (currentState, activeState, color) => {
     return {
-      color: currentState === activeState ? '#fff' : color,
+      color: currentState === activeState ? themeColor.dark : color,
       fontSize: currentState === activeState ? 14 : 16,
       fontWeight: currentState === activeState ? 'normal' : 'bold',
     };
@@ -166,7 +167,12 @@ export default class Login extends Component {
                 this.setState({active: 0}, () => this.handleSlide(xTabOne));
                 console.log(xTabOne);
               }}>
-              <Text style={this.textStyleChangeOnState(active, 1, '#446e46')}>
+              <Text
+                style={this.textStyleChangeOnState(
+                  active,
+                  1,
+                  themeColor.bright,
+                )}>
                 Sign In
               </Text>
             </TouchableOpacity>
@@ -181,7 +187,12 @@ export default class Login extends Component {
                 console.log(xTabTwo);
                 this.setState({active: 1}, () => this.handleSlide(xTabTwo));
               }}>
-              <Text style={this.textStyleChangeOnState(active, 0, '#446e46')}>
+              <Text
+                style={this.textStyleChangeOnState(
+                  active,
+                  0,
+                  themeColor.bright,
+                )}>
                 Register
               </Text>
             </TouchableOpacity>
@@ -231,12 +242,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 0,
     alignItems: 'center',
-    // backgroundColor: '#7bb87e',
   },
   icon: {
     flex: -4,
-    // width: w(70),
-    // height: h(30),
     width: w(20),
     height: h(15),
   },
@@ -250,7 +258,6 @@ const styles = StyleSheet.create({
   },
   logoText: {
     flex: -8,
-    // marginTop: h(1),
     fontSize: h(4),
     color: 'white',
     fontWeight: 'bold',
