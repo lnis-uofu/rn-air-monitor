@@ -18,11 +18,13 @@ import {
   TouchableOpacity,
   Animated,
   Dimensions,
+  ImageBackground,
 } from 'react-native';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import {w, h, totalSize} from '../../../api/Dimensions';
 const uLogo = require('../../../../assets/U_Logo.png');
+const backGroundImage = require('../../../../assets/green_gradient.jpg');
 const {width} = Dimensions.get('window');
 
 export default class Login extends Component {
@@ -58,14 +60,7 @@ export default class Login extends Component {
   }
 
   handleSlide = type => {
-    let {
-      active,
-      xTabOne,
-      xTabTwo,
-      translateX,
-      translateXTabOne,
-      translateXTabTwo,
-    } = this.state;
+    let {active, translateX, translateXTabOne, translateXTabTwo} = this.state;
     Animated.spring(translateX, {
       toValue: type,
       speed: 300,
@@ -150,80 +145,84 @@ export default class Login extends Component {
     console.log('Render Platform version ' + Platform.Version);
 
     return (
-      <KeyboardAvoidingView behavior="padding" style={styles.container}>
-        <View style={styles.logoContainer}>
-          <Image style={styles.icon} resizeMode="contain" source={uLogo} />
-          <Text style={styles.logoText}>UNIVERSITY of UTAH</Text>
-        </View>
-        <View style={styles.tabView}>
-          <Animated.View style={this.animatedTabTransform(translateX)} />
-          <TouchableOpacity
-            style={styles.tabStyle}
-            onLayout={event =>
-              this._setState({
-                xTabOne: event.nativeEvent.layout.x,
-              })
-            }
-            onPress={() => {
-              this.setState({active: 0}, () => this.handleSlide(xTabOne));
-              console.log(xTabOne);
-            }}>
-            <Text style={this.textStyleChangeOnState(active, 1, '#446e46')}>
-              Sign In
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.tabStyle}
-            onLayout={event =>
-              this._setState({
-                xTabTwo: event.nativeEvent.layout.x,
-              })
-            }
-            onPress={() => {
-              console.log(xTabTwo);
-              this.setState({active: 1}, () => this.handleSlide(xTabTwo));
-            }}>
-            <Text style={this.textStyleChangeOnState(active, 0, '#446e46')}>
-              Register
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <KeyboardAvoidingView behavior="padding">
-          <Animated.View
-            style={{
-              transform: [
-                {
-                  translateX: translateXTabOne,
-                },
-              ],
-            }}
-            onLayout={event =>
-              this._setState({
-                translateY: event.nativeEvent.layout.height,
-              })
-            }>
-            <LoginForm />
-          </Animated.View>
-          <Animated.View
-            style={{
-              transform: [
-                {
-                  translateX: translateXTabTwo,
-                },
-                {
-                  translateY: -translateY,
-                },
-              ],
-            }}
-            onLayout={event =>
-              this._setState({
-                translateY: event.nativeEvent.layout.height,
-              })
-            }>
-            <RegisterForm onActionDone={this.onRegistrationDone} />
-          </Animated.View>
+      <ImageBackground
+        source={backGroundImage}
+        style={{width: '100%', height: '100%'}}>
+        <KeyboardAvoidingView behavior="padding" style={styles.container}>
+          <View style={styles.logoContainer}>
+            <Image style={styles.icon} resizeMode="contain" source={uLogo} />
+            <Text style={styles.logoText}>UNIVERSITY of UTAH</Text>
+          </View>
+          <View style={styles.tabView}>
+            <Animated.View style={this.animatedTabTransform(translateX)} />
+            <TouchableOpacity
+              style={styles.tabStyle}
+              onLayout={event =>
+                this._setState({
+                  xTabOne: event.nativeEvent.layout.x,
+                })
+              }
+              onPress={() => {
+                this.setState({active: 0}, () => this.handleSlide(xTabOne));
+                console.log(xTabOne);
+              }}>
+              <Text style={this.textStyleChangeOnState(active, 1, '#446e46')}>
+                Sign In
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.tabStyle}
+              onLayout={event =>
+                this._setState({
+                  xTabTwo: event.nativeEvent.layout.x,
+                })
+              }
+              onPress={() => {
+                console.log(xTabTwo);
+                this.setState({active: 1}, () => this.handleSlide(xTabTwo));
+              }}>
+              <Text style={this.textStyleChangeOnState(active, 0, '#446e46')}>
+                Register
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <KeyboardAvoidingView behavior="padding">
+            <Animated.View
+              style={{
+                transform: [
+                  {
+                    translateX: translateXTabOne,
+                  },
+                ],
+              }}
+              onLayout={event =>
+                this._setState({
+                  translateY: event.nativeEvent.layout.height,
+                })
+              }>
+              <LoginForm />
+            </Animated.View>
+            <Animated.View
+              style={{
+                transform: [
+                  {
+                    translateX: translateXTabTwo,
+                  },
+                  {
+                    translateY: -translateY,
+                  },
+                ],
+              }}
+              onLayout={event =>
+                this._setState({
+                  translateY: event.nativeEvent.layout.height,
+                })
+              }>
+              <RegisterForm onActionDone={this.onRegistrationDone} />
+            </Animated.View>
+          </KeyboardAvoidingView>
         </KeyboardAvoidingView>
-      </KeyboardAvoidingView>
+      </ImageBackground>
     );
   }
 }
@@ -232,7 +231,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 0,
     alignItems: 'center',
-    backgroundColor: '#7bb87e',
+    // backgroundColor: '#7bb87e',
   },
   icon: {
     flex: -4,
