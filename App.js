@@ -14,6 +14,7 @@ import HomeScreen from './src/components/screens/Home/HomeScreen';
 import firebase from 'react-native-firebase';
 import {createAppContainer} from 'react-navigation';
 import {createStackNavigator} from 'react-navigation-stack';
+
 export const themeColor = {
   bright: '#C5FBD0',
   dark: '#325C3C',
@@ -57,7 +58,7 @@ export default class App extends React.Component {
     this.authSubscription();
   }
   render() {
-    console.log('User info ', this.state.user);
+    // console.log('User info ', this.state.user);
     return <HomeScreen />;
 
     // if (this.state.user == null) {

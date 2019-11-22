@@ -6,23 +6,56 @@ import {
   Button,
   StyleSheet,
   Image,
-  TouchableHighlight,
   TouchableOpacity,
   ImageBackground,
 } from 'react-native';
 import {w, h, totalSize} from '../../../api/Dimensions';
-import {themeColor} from '../../../../App';
-import leftPad from 'left-pad';
+import QRCodeScanner from 'react-native-qrcode-scanner';
+
 const homebgPath = require('../../../../assets/home_bg.png');
 const configureIconPath = require('../../../../assets/configure_icon.png');
 const configureIconSize = totalSize(5);
 export default class HomeScreen extends React.Component {
+  constructor() {
+    super();
+    this.state = {
+      cameraScan: false,
+      isLoggedIn: true,
+    };
+    this.registerForm = React.createRef();
+  }
+  onSuccess = qrData => {
+    console.log('Scan success!!!');
+    console.log(qrData.data);
+  };
+
   render() {
+    if (this.state.cameraScan) {
+      return (
+        <QRCodeScanner
+          showMarker={true}
+          onRead={this.onSuccess}
+          topContent={<Text style={styles.centerText}>Scan window</Text>}
+          bottomContent={
+            <TouchableOpacity
+              style={styles.buttonTouchable}
+              onPress={() => {
+                this.setState({cameraScan: false});
+              }}>
+              <Text style={styles.buttonText}>OK. Got it!</Text>
+            </TouchableOpacity>
+          }
+        />
+      );
+    }
+
     return (
       <ImageBackground source={homebgPath} style={styles.viewStyle}>
         <TouchableOpacity
           style={styles.configureIcon}
-          onPress={console.log('Configuration page')}>
+          onPress={() => {
+            console.log('Configuration page');
+          }}>
           <Image
             style={{height: configureIconSize, width: configureIconSize}}
             source={configureIconPath}
@@ -30,7 +63,10 @@ export default class HomeScreen extends React.Component {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.roundTouchable}
-          onPress={console.log('Add new sensor')}>
+          onPress={() => {
+            console.log('Add new sensor');
+            this.setState({cameraScan: true});
+          }}>
           <Text style={styles.plusText}>+</Text>
         </TouchableOpacity>
         <Button
@@ -78,5 +114,22 @@ const styles = StyleSheet.create({
     borderRadius: configureIconSize / 2,
     marginLeft: w(85),
     marginTop: h(2),
+  },
+  centerText: {
+    flex: 1,
+    fontSize: 18,
+    padding: 32,
+    color: '#777',
+  },
+  textBold: {
+    fontWeight: '500',
+    color: '#000',
+  },
+  buttonText: {
+    fontSize: 21,
+    color: 'rgb(0,122,255)',
+  },
+  buttonTouchable: {
+    padding: 16,
   },
 });

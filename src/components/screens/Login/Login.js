@@ -23,7 +23,7 @@ import {
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import {w, h, totalSize} from '../../../api/Dimensions';
-import {themeColor} from '../../../../App'
+import {themeColor} from '../../../../App';
 const uLogo = require('../../../../assets/U_Logo.png');
 const backGroundImage = require('../../../../assets/green_gradient.jpg');
 const {width} = Dimensions.get('window');
