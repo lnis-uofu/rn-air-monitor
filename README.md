@@ -65,3 +65,9 @@ https://rnfirebase.io/docs/v5.x.x/getting-started
 
 Install react navigation
 https://reactnavigation.org/docs/en/getting-started.html
+
+Install react-native-camera
+https://github.com/react-native-community/react-native-camera/blob/master/docs/installation.md#requirements
+
+react-native-qr scanner
+https://github.com/moaazsidat/react-native-qrcode-scanner#readme

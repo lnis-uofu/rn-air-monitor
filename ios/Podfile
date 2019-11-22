@@ -28,6 +28,7 @@ target 'rn_air_monitor' do
   pod 'Folly', :podspec => '../node_modules/react-native/third-party-podspecs/Folly.podspec'
 pod 'Firebase/Auth'
 pod 'Firebase/Firestore'
+pod 'react-native-camera', path: '../node_modules/react-native-camera'
 
   target 'rn_air_monitorTests' do
     inherit! :search_paths
