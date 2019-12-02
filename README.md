@@ -69,5 +69,9 @@ https://reactnavigation.org/docs/en/getting-started.html
 Install react-native-camera
 https://github.com/react-native-community/react-native-camera/blob/master/docs/installation.md#requirements
 
+iOS react-native-camera references
+https://github.com/react-native-community/react-native-permissions/issues/376
+https://github.com/react-native-community/react-native-permissions/issues/348#issuecomment-541423154
+
 react-native-qr scanner
 https://github.com/moaazsidat/react-native-qrcode-scanner#readme
