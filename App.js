@@ -12,8 +12,8 @@ import React from 'react';
 import Login from './src/components/screens/Login/Login';
 import HomeScreen from './src/components/screens/Home/HomeScreen';
 import firebase from 'react-native-firebase';
-import {createAppContainer} from 'react-navigation';
-import {createStackNavigator} from 'react-navigation-stack';
+// import {createAppContainer} from 'react-navigation';
+// import {createStackNavigator} from 'react-navigation-stack';
 
 export const themeColor = {
   bright: '#C5FBD0',
@@ -21,17 +21,17 @@ export const themeColor = {
   error: '#ff0000',
 };
 
-const RootStack = createStackNavigator(
-  {
-    Home: HomeScreen,
-    Login: Login,
-  },
-  {
-    initialRouteName: 'Home',
-  },
-);
+// const RootStack = createStackNavigator(
+//   {
+//     Home: HomeScreen,
+//     Login: Login,
+//   },
+//   {
+//     initialRouteName: 'Home',
+//   },
+// );
 
-const AppContainer = createAppContainer(RootStack);
+// const AppContainer = createAppContainer(RootStack);
 export default class App extends React.Component {
   constructor() {
     super();
