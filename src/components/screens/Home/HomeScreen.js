@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import {w, h, totalSize} from '../../../api/Dimensions';
 import QRCodeScanner from 'react-native-qrcode-scanner';
+import WifiManager from 'react-native-wifi-reborn';
 
 const homebgPath = require('../../../../assets/home_bg.png');
 const configureIconPath = require('../../../../assets/configure_icon.png');
@@ -29,6 +30,43 @@ export default class HomeScreen extends React.Component {
     console.log(qrData.data);
   };
 
+  requestDeviceWifiConnect = async () => {
+    return fetch('http://192.168.4.1/connect.json', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-Custom-ssid': 'airu',
+        'X-Custom-pwd': 'cleantheair',
+      },
+    })
+      .then(response => {
+        const myObjStr = JSON.stringify(response);
+        // console.log(JSON.stringify(response, null, 4));
+        console.log(myObjStr);
+        console.log(response.status);
+        if (response.status !== 200) {
+          console.warn('Fail to send HTTP request');
+        }
+      })
+      .catch(error => {
+        // console.warn(error);
+      });
+  };
+  componentDidMount = () => {
+    console.log('Mounted');
+    this.requestDeviceWifiConnect().then(responseJson => {
+      console.log('>>>>>>>>>>>>>>request sent');
+    });
+    // WifiManager.connectToProtectedSSID('AirU-A9F4', 'cleantheair', true).then(
+    //   () => {
+    //     console.warn('Connected successfully!');
+
+    //   },
+    //   () => {
+    //     console.log('Connection failed!');
+    //   },
+    // );
+  };
   render() {
     if (this.state.cameraScan) {
       return (
