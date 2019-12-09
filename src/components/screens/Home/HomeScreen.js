@@ -53,7 +53,7 @@ export default class HomeScreen extends React.Component {
       cameraScan: false,
       registeringDevice: true,
     });
-    // this.connectToAirUSoftAP();
+    this.connectToAirUSoftAP();
   };
 
   requestWifiStationConnect = async () => {
@@ -99,15 +99,6 @@ export default class HomeScreen extends React.Component {
     this.requestWifiStationConnect().then(responseJson => {
       console.log('>>>>>>>>>>>>>>request sent');
     });
-    // WifiManager.connectToProtectedSSID('AirU-A9F4', 'cleantheair', true).then(
-    //   () => {
-    //     console.warn('Connected successfully!');
-
-    //   },
-    //   () => {
-    //     console.log('Connection failed!');
-    //   },
-    // );
   };
   render() {
     if (this.state.cameraScan) {

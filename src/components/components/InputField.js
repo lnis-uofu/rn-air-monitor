@@ -2,6 +2,11 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {StyleSheet, View, Image, TextInput} from 'react-native';
 import {w, h, totalSize} from '../../api/Dimensions';
+const themeColor = {
+  bright: '#C5FBD0',
+  dark: '#325C3C',
+  error: '#ff0000',
+};
 export default class InputField extends Component {
   constructor() {
     super();
@@ -29,7 +34,7 @@ export default class InputField extends Component {
       paddingLeft: w(11),
       borderRadius: totalSize(3),
       borderBottomWidth: totalSize(0.15),
-      color: color,
+      color: themeColor.bright,
       borderBottomColor: color,
     };
   };

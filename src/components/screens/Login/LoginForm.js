@@ -215,8 +215,8 @@ export default class LoginForm extends Component {
         <KeyboardAvoidingView behavior="padding" style={styles.loginContainer}>
           <Loader
             isLoading={this.state.loading}
-            indicatorSize="large"
-            indicatorColor="#446e46"
+            indicatorSize={100}
+            indicatorColor="#FFF"
           />
           <InputField
             source={emailLogo}
