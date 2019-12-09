@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {StyleSheet, View, Image, TextInput} from 'react-native';
-import {w, h} from '../../api/Dimensions';
+import {w, h, totalSize} from '../../api/Dimensions';
 export default class InputField extends Component {
   constructor() {
     super();
@@ -24,11 +24,11 @@ export default class InputField extends Component {
   textStyleChangeOnState = color => {
     return {
       width: w(80),
-      height: h(7),
-      marginHorizontal: 20,
-      paddingLeft: 45,
-      borderRadius: 20,
-      borderBottomWidth: 1,
+      height: h(6),
+      marginHorizontal: w(6),
+      paddingLeft: w(11),
+      borderRadius: totalSize(3),
+      borderBottomWidth: totalSize(0.15),
       color: color,
       borderBottomColor: color,
     };
@@ -84,16 +84,6 @@ InputField.defaultProps = {
 };
 
 const styles = StyleSheet.create({
-  input: {
-    width: w(80),
-    height: h(7),
-    marginHorizontal: 20,
-    paddingLeft: 45,
-    borderRadius: 20,
-    color: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#ffffff',
-  },
   inputWrapper: {
     flex: 1,
   },
@@ -103,6 +93,6 @@ const styles = StyleSheet.create({
     width: w(5),
     height: h(3),
     left: w(10),
-    top: h(1.7),
+    top: h(1.5),
   },
 });
