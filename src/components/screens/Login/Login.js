@@ -24,10 +24,9 @@ import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import {w, h, totalSize} from '../../../api/Dimensions';
 import {themeColor} from '../../../../App';
-const uLogo = require('../../../../assets/U_Logo.png');
+const aqAndULogo = require('../../../../assets/aqLogo.png');
 const backGroundImage = require('../../../../assets/green_gradient.jpg');
 const {width} = Dimensions.get('window');
-
 export default class Login extends Component {
   _isMounted = false;
 
@@ -151,8 +150,11 @@ export default class Login extends Component {
         style={{width: '100%', height: '100%'}}>
         <KeyboardAvoidingView behavior="padding" style={styles.container}>
           <View style={styles.logoContainer}>
-            <Image style={styles.icon} resizeMode="contain" source={uLogo} />
-            <Text style={styles.logoText}>UNIVERSITY of UTAH</Text>
+            <Image
+              style={styles.icon}
+              resizeMode="contain"
+              source={aqAndULogo}
+            />
           </View>
           <View style={styles.tabView}>
             <Animated.View style={this.animatedTabTransform(translateX)} />
@@ -245,8 +247,8 @@ const styles = StyleSheet.create({
   },
   icon: {
     flex: -4,
-    width: w(20),
-    height: h(15),
+    width: totalSize(30),
+    height: totalSize(30),
   },
   logoContainer: {
     flex: -4,

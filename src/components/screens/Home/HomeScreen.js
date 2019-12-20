@@ -1,26 +1,40 @@
 import React from 'react';
 import firebase from 'react-native-firebase';
 import {
-  View,
+  Alert,
   Text,
   Button,
   StyleSheet,
   Image,
   TouchableOpacity,
   ImageBackground,
+  Platform,
 } from 'react-native';
 import {w, h, totalSize} from '../../../api/Dimensions';
 import DeviceRegistration from '../Register/DeviceRegistration';
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import WifiManager from 'react-native-wifi-reborn';
-
+import Loader from '../../components/Loader';
 const homebgPath = require('../../../../assets/home_bg.png');
 const configureIconPath = require('../../../../assets/configure_icon.png');
 const configureIconSize = totalSize(4);
 const wifiPrefix = 'AirU-';
 const softAPPassword = 'cleantheair';
-const stationSSID = 'airu';
-const connectURL = 'http://192.168.4.1/connect.json';
+const statusURL = 'http://192.168.4.1/status.json';
+const mobileDataAlertMessage =
+  Platform.OS === 'ios'
+    ? 'iOS construction'
+    : 'Setting > Connections > Data usage > Uncheck Mobile data';
+const sleep = milliseconds => {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+};
+
+const urcCode = {
+  CONNECTED: 0,
+  CONNECTION_ERROR: 1,
+  NOT_CONNECTED: 2,
+};
+
 export default class HomeScreen extends React.Component {
   constructor() {
     super();
@@ -29,6 +43,7 @@ export default class HomeScreen extends React.Component {
       isLoggedIn: true,
       softAPssid: wifiPrefix,
       registeringDevice: false,
+      isLoading: false,
     };
   }
 
@@ -50,56 +65,92 @@ export default class HomeScreen extends React.Component {
     console.log(softAPssid);
     this.setState({
       softAPssid: softAPssid,
-      cameraScan: false,
-      registeringDevice: true,
     });
-    this.connectToAirUSoftAP();
+    this.connectToAirUSoftAP(softAPssid);
   };
 
-  requestWifiStationConnect = async () => {
-    return fetch(connectURL, {
-      method: 'POST',
+  componentDidMount1 = () => {
+    console.log('mounted');
+    this.fetchWiFiStatusFromDevice().then(response => {
+      console.log(response);
+    });
+  };
+
+  // Return Response object
+  // Need to add timeout on HTTP request
+  fetchWiFiStatusFromDevice = async () => {
+    return fetch(statusURL, {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-Custom-ssid': stationSSID,
-        'X-Custom-pwd': softAPPassword,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
       },
     })
       .then(response => {
-        const myObjStr = JSON.stringify(response);
-        // console.log(JSON.stringify(response, null, 4));
-        console.log(myObjStr);
-        console.log(response.status);
-        if (response.status !== 200) {
-          console.warn('Fail to send HTTP request');
-        }
+        console.log('fetchWiFiStatusFromDevice');
+        console.log(response);
+        response.json().then(responseJson => {
+          console.log('body JSON');
+          console.log(responseJson);
+        });
+        return response;
       })
       .catch(error => {
-        // console.warn(error);
+        console.warn('fetchWiFiStatusFromDevice error code: --> ' + error);
+        this.setState({
+          cameraScan: false,
+          registeringDevice: false,
+          isLoading: false,
+        });
       });
   };
+  connectionStatusCallBack = status => {
+    console.log('isConnected? ' + status);
+    if (status) {
+      this.fetchWiFiStatusFromDevice().then(response => {
+        if (response.ok) {
+          console.log('Connected successfully! ', this.state.softAPssid);
+          this.setState({
+            cameraScan: false,
+            registeringDevice: true,
+            isLoading: false,
+          });
+        } else {
+          console.warn('Terrible things happened!');
+          this.setState({
+            cameraScan: false,
+            registeringDevice: false,
+            isLoading: false,
+          });
+        }
+      });
+    } else {
+      console.warn('Not connected. retry');
+      this.setState({
+        cameraScan: false,
+        registeringDevice: false,
+        isLoading: false,
+      });
+    }
+  };
 
-  connectToAirUSoftAP = () => {
-    console.log('Connecting to AirU soft AP');
-    WifiManager.connectToProtectedSSID(
-      this.state.softAPssid,
-      softAPPassword,
-      true,
-    ).then(
+  connectToAirUSoftAP = softAPssid => {
+    console.log('Connecting to AirU soft AP ' + softAPssid);
+    WifiManager.connectToProtectedSSID(softAPssid, softAPPassword, true).then(
       () => {
-        console.log('Connected successfully! ', this.state.softAPssid);
+        this.setState({isLoading: true, cameraScan: false});
+        sleep(8000).then(() => {
+          // @problem
+          // always return false when using data on Android
+          WifiManager.connectionStatus(this.connectionStatusCallBack);
+        });
       },
       () => {
         console.warn('Connection failed!');
       },
     );
   };
-  componentDidMount1 = () => {
-    console.log('Mounted');
-    this.requestWifiStationConnect().then(responseJson => {
-      console.log('>>>>>>>>>>>>>>request sent');
-    });
-  };
+
   render() {
     if (this.state.cameraScan) {
       return (
@@ -120,11 +171,6 @@ export default class HomeScreen extends React.Component {
       );
     } else if (this.state.registeringDevice) {
       return (
-        // <ImageBackground source={homebgPath} style={styles.viewStyle}>
-        //   <Text style={styles.plusText}>
-        //     This might take up to 1 minute to complete
-        //   </Text>
-        // </ImageBackground>
         <DeviceRegistration onRegistrationDone={this.deviceRegistrationDone} />
       );
     } else {
@@ -144,7 +190,14 @@ export default class HomeScreen extends React.Component {
             style={styles.roundTouchable}
             onPress={() => {
               console.log('Add new sensor');
-              this.setState({cameraScan: true});
+              Alert.alert('Disable your mobile data', mobileDataAlertMessage, [
+                {
+                  text: 'OK',
+                  onPress: () => {
+                    this.setState({cameraScan: true});
+                  },
+                },
+              ]);
             }}>
             <Text style={styles.plusText}>+</Text>
           </TouchableOpacity>
@@ -161,6 +214,11 @@ export default class HomeScreen extends React.Component {
                   console.log(error);
                 });
             }}
+          />
+          <Loader
+            isLoading={this.state.isLoading}
+            indicatorSize={100}
+            indicatorColor="#FFF"
           />
         </ImageBackground>
       );

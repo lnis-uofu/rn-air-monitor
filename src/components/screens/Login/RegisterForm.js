@@ -234,7 +234,7 @@ export default class RegisterForm extends Component {
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
         <Loader
           isLoading={this.state.loading}
-          indicatorSize="large"
+          indicatorSize={100}
           indicatorColor={themeColor.bright}
         />
         <InputField

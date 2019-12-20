@@ -1,6 +1,8 @@
 /**
  * @format
  */
+// global.XMLHttpRequest = global.originalXMLHttpRequest || global.XMLHttpRequest;
+// global.Blob = null;
 
 import {AppRegistry} from 'react-native';
 import App from './App';

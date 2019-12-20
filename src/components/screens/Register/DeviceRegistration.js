@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {
+  Alert,
   Text,
   StyleSheet,
   View,
@@ -21,6 +22,7 @@ const widgetWidth = w(100);
 const backIconRadius = h(3);
 const backText = '<';
 const connectURL = 'http://192.168.4.1/connect.json';
+const statusURL = 'http://192.168.4.1/status.json';
 const sleep = milliseconds => {
   return new Promise(resolve => setTimeout(resolve, milliseconds));
 };
@@ -58,7 +60,7 @@ export default class DeviceRegistration extends Component {
 
   pollingWifiStatus = milliseconds => {
     sleep(milliseconds).then(() => {});
-  }
+  };
   wifiCredsDone = () => {
     if (this.state.ssid.length === 0) {
       console.warn('Please enter your WiFi name');
@@ -84,22 +86,74 @@ export default class DeviceRegistration extends Component {
       wifiCredential: true,
     });
     console.log('ssid/pwd:', this.state.ssid, this.state.wifiPassword);
-    // sleep(3000).then(() => {
-    //   this.setState({sendingMessageColor: '#2bff59'});
-    // });
-    // sleep(5000).then(() => {
-    //   this.setState({queryWifiStatusColor: '#2bff59'});
-    // });
-    this.requestWifiStationConnect().then(() => {
+    this.requestWifiStationConnect().then(response => {
       console.log('>>>>>>>>>>>>>>request sent');
+      this.setState({sendingMessageColor: '#2bff59'});
+      if (response.status !== 200) {
+        // Return code is not success
+        this.setState({sendingMessageColor: themeColor.error});
+        console.warn('Fail to send HTTP request');
+        Alert.alert(
+          'Request failed! Please retry!',
+          `Error '${response.status}' return!`,
+        );
+      } else {
+        // Status code is 200. Continue with checking the connection
+        // Wait for wifi to be configured on device
+        sleep(15000).then(() => {
+          this.setState({sendingMessageColor: '#2bff59'});
+          this.fetchWiFiStatusFromDevice().then(responseOne => {
+            responseOne.json().then(responseJson => {
+              console.log('body JSON');
+              console.log(responseJson);
+              if (responseJson.urc === 0) {
+                // Connected, good
+                this.setState({
+                  wifiCredential: false,
+                  sendingMessageColor: '#fff',
+                  queryWifiStatusColor: '#fff',
+                });
+                console.log('URC 0');
+              } else if (responseJson.urc === 1) {
+                Alert.alert(
+                  'Fail to connect to wifi',
+                  `Make sure you entered the correct credential 
+                  '${this.state.ssid}/${this.state.wifiPassword}'
+                  or Make your wifi is up!`,
+                );
+                console.log('URC 1');
+              } else if (responseJson.urc === 2) {
+                // Unknown case
+                console.log('URC 2');
+              }
+            });
+          });
+        });
+      }
     });
-    sleep(20000).then(() => {
-      this.setState({
-        wifiCredential: false,
-        sendingMessageColor: '#fff',
-        queryWifiStatusColor: '#fff',
+  };
+
+  fetchWiFiStatusFromDevice = async () => {
+    return fetch(statusURL, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => {
+        console.log('fetchWiFiStatusFromDevice');
+        console.log(response);
+        return response;
+      })
+      .catch(error => {
+        console.warn('fetchWiFiStatusFromDevice error code: --> ' + error);
+        this.setState({
+          cameraScan: false,
+          registeringDevice: false,
+          isLoading: false,
+        });
       });
-    });
   };
 
   requestWifiStationConnect = async () => {
@@ -112,16 +166,8 @@ export default class DeviceRegistration extends Component {
       },
     })
       .then(response => {
-        const myObjStr = JSON.stringify(response);
-        // console.log(JSON.stringify(response, null, 4));
-        console.log(myObjStr);
         console.log(response.status);
-        if (response.status !== 200) {
-          this.setState({sendingMessageColor: themeColor.error});
-          console.warn('Fail to send HTTP request');
-        } else {
-          this.setState({sendingMessageColor: '#2bff59'});
-        }
+        return response;
       })
       .catch(error => {
         // console.warn(error);
@@ -129,7 +175,6 @@ export default class DeviceRegistration extends Component {
   };
 
   render() {
-    console.log(this.state.wifiCredential);
     return (
       <ImageBackground source={homebgPath} style={styles.backgroundStyle}>
         <View style={styles.headerStyle}>
@@ -180,15 +225,6 @@ export default class DeviceRegistration extends Component {
             <Text style={styles.nextTextStyle}>Next</Text>
           </TouchableOpacity>
         </View>
-        {/* <View>
-          <Spinner
-            style={styles.spinner}
-            isVisible={true}
-            size={100}
-            type={'Bounce'}
-            color={'#FFFFFF'}
-          />
-        </View> */}
         <Modal
           transparent={true}
           animationType={'none'}
@@ -287,10 +323,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: h(5),
     width: widgetWidth / 2,
-    // borderTopWidth: 1,
-    // borderBottomWidth: 1,
-    // borderRightWidth: 1,
-    // borderColor: '#71AC7F',
     backgroundColor: 'rgba(113, 172, 127,0.1)',
   },
   spinner: {
