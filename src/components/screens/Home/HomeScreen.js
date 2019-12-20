@@ -123,6 +123,9 @@ export default class HomeScreen extends React.Component {
             isLoading: false,
           });
         }
+      })
+      .catch(err => {
+        Alert.alert('Make sure you disabled mobile data and device is on!', 'Please retry again after that!');
       });
     } else {
       console.warn('Not connected. retry');

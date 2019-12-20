@@ -13,6 +13,7 @@ import {w, h, totalSize} from '../../../api/Dimensions';
 import InputField from '../../components/InputField';
 import {themeColor} from '../../../../App';
 import Loader from '../../components/Loader';
+import WifiManager from 'react-native-wifi-reborn';
 var Spinner = require('react-native-spinkit');
 
 const homebgPath = require('../../../../assets/home_bg.png');
@@ -61,6 +62,7 @@ export default class DeviceRegistration extends Component {
   pollingWifiStatus = milliseconds => {
     sleep(milliseconds).then(() => {});
   };
+
   wifiCredsDone = () => {
     if (this.state.ssid.length === 0) {
       console.warn('Please enter your WiFi name');
@@ -108,23 +110,56 @@ export default class DeviceRegistration extends Component {
               console.log(responseJson);
               if (responseJson.urc === 0) {
                 // Connected, good
-                this.setState({
-                  wifiCredential: false,
-                  sendingMessageColor: '#fff',
-                  queryWifiStatusColor: '#fff',
-                });
+                // Disconnect with device, reconnect to previous WiFi
+                Alert.alert(
+                  'Congratulation',
+                  'Your device has been connected to WiFi successfully',
+                  [
+                    {
+                      text: 'OK',
+                      onPress: () => {
+                        console.log(
+                          `Connecting to AirU soft AP ${this.state.ssid} / ${this.state.wifiPassword}`,
+                        );
+
+                        WifiManager.connectToProtectedSSID(
+                          this.state.ssid,
+                          this.state.wifiPassword,
+                          true,
+                        ).then(
+                          () => {
+                            console.log('Connected');
+                            sleep(5000).then(() => {
+                              this.setState({
+                                wifiCredential: false,
+                                sendingMessageColor: '#fff',
+                                queryWifiStatusColor: '#fff',
+                              });
+                              this.props.onRegistrationDone();
+                            });
+                          },
+                          () => {
+                            console.warn('Connection failed!');
+                          },
+                        );
+                      },
+                    },
+                  ],
+                );
+
                 console.log('URC 0');
-              } else if (responseJson.urc === 1) {
+              } else {
                 Alert.alert(
                   'Fail to connect to wifi',
                   `Make sure you entered the correct credential 
                   '${this.state.ssid}/${this.state.wifiPassword}'
-                  or Make your wifi is up!`,
+                  or Make sure your WiFi Access Point is up!`,
                 );
+                this.setState({
+                  wifiCredential: false,
+                });
+
                 console.log('URC 1');
-              } else if (responseJson.urc === 2) {
-                // Unknown case
-                console.log('URC 2');
               }
             });
           });
