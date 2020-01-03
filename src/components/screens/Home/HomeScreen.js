@@ -28,6 +28,7 @@ const mobileDataAlertMessage =
 const sleep = milliseconds => {
   return new Promise(resolve => setTimeout(resolve, milliseconds));
 };
+const usersCollection = 'users';
 
 const urcCode = {
   CONNECTED: 0,
@@ -35,6 +36,61 @@ const urcCode = {
   NOT_CONNECTED: 2,
 };
 
+addDeviceInfoToFireBaseDataBase = async (macAddress) => {
+  console.log('Get devices info!');
+  var isDuplicated = false;
+  const refUser = await firebase
+  .firestore()
+  .collection(usersCollection)
+  .doc(global.email);
+
+  console.log('firebase.firestore().runTransaction');
+  await firebase.firestore().runTransaction(async transaction => {
+    console.log('Get devices info!');
+    const doc = await transaction.get(refUser);
+
+    // if it does not exist set the entry
+    if (!doc.exists) {
+      console.log('Not EXISTED');
+      const newDeviceData = new Array();
+      newDeviceData.push(macAddress);
+      transaction.set(refUser, {devices: newDeviceData})
+      return 1;
+    }
+    console.log('EXISTED');
+    const devicesData = doc.data().devices;
+    // Check to see if there is such field
+    if (devicesData) {
+      // Check duplication
+      devicesData.forEach(device => {
+        if (macAddress === device) {
+          console.log('Found duplication');
+          isDuplicated = true;
+        }
+      });
+      if (isDuplicated !== true) {
+        devicesData.push(macAddress);
+        console.log('New Devices data ');
+        console.log(devicesData);
+        // Update new device information to the current table
+        transaction.update(refUser, {
+          devices: devicesData,
+        });
+      } else {
+        console.log('Found duplication');
+      }
+    } else {
+      const newDeviceData = new Array();
+      newDeviceData.push(macAddress);
+      transaction.update(refUser, {devices: newDeviceData})
+      return 1;
+    }
+
+  })
+  .catch(err => {
+    console.warn(err);
+  });
+}
 export default class HomeScreen extends React.Component {
   constructor() {
     super();
@@ -48,10 +104,10 @@ export default class HomeScreen extends React.Component {
   }
 
   deviceRegistrationDone = () => {
-    this.setState({registeringDevice: false, cameraScan: false});
+    this.setState({registeringDevice: false, cameraScan: false, isLoading: false});
   };
 
-  onSuccess = qrData => {
+  onScanSuccess = async (qrData) => {
     console.log('Scan success!!!');
     console.log(qrData.data);
     let macAddrNoColons = qrData.data;
@@ -63,17 +119,19 @@ export default class HomeScreen extends React.Component {
       addrLength,
     )}`;
     console.log(softAPssid);
+    // Update information on database
+
     this.setState({
       softAPssid: softAPssid,
     });
+    // Update board information to database
+    await addDeviceInfoToFireBaseDataBase(qrData.data);
+    // Connect to Soft Access Point on Device
     this.connectToAirUSoftAP(softAPssid);
   };
 
-  componentDidMount1 = () => {
-    console.log('mounted');
-    this.fetchWiFiStatusFromDevice().then(response => {
-      console.log(response);
-    });
+  componentDidMount = async () => {
+    console.log('HomeScreen mounted ' + global.email);
   };
 
   // Return Response object
@@ -159,7 +217,7 @@ export default class HomeScreen extends React.Component {
       return (
         <QRCodeScanner
           showMarker={true}
-          onRead={this.onSuccess}
+          onRead={this.onScanSuccess}
           topContent={<Text style={styles.centerText}>Scan window</Text>}
           bottomContent={
             <TouchableOpacity

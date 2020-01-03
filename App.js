@@ -20,6 +20,7 @@ export const themeColor = {
   error: '#ff0000',
 };
 
+global.email = "";
 export default class App extends React.Component {
   constructor() {
     super();
@@ -52,7 +53,8 @@ export default class App extends React.Component {
     if (this.state.user == null) {
       return <Login />;
     } else {
-      console.log('Logged in with user ' + this.state.user);
+      console.log('Logged in with user ' + this.state.user.email);
+      global.email = this.state.user.email;
       return <HomeScreen />;
     }
   }

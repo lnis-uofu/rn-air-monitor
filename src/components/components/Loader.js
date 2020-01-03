@@ -5,7 +5,6 @@ var Spinner = require('react-native-spinkit');
 
 export default class Loader extends Component {
   render() {
-    console.log('is loading ' + this.props.isLoading);
     return (
       <Modal
         style={styles.modalStyle}

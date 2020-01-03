@@ -25,7 +25,6 @@ import RegisterForm from './RegisterForm';
 import {w, h, totalSize} from '../../../api/Dimensions';
 import {themeColor} from '../../../../App';
 const aqAndULogo = require('../../../../assets/aqLogo.png');
-const backGroundImage = require('../../../../assets/green_gradient.jpg');
 const {width} = Dimensions.get('window');
 export default class Login extends Component {
   _isMounted = false;
@@ -145,97 +144,93 @@ export default class Login extends Component {
     console.log('Render Platform version ' + Platform.Version);
 
     return (
-      <ImageBackground
-        source={backGroundImage}
-        style={{width: '100%', height: '100%'}}>
-        <KeyboardAvoidingView behavior="padding" style={styles.container}>
-          <View style={styles.logoContainer}>
-            <Image
-              style={styles.icon}
-              resizeMode="contain"
-              source={aqAndULogo}
-            />
-          </View>
-          <View style={styles.tabView}>
-            <Animated.View style={this.animatedTabTransform(translateX)} />
-            <TouchableOpacity
-              style={styles.tabStyle}
-              onLayout={event =>
-                this._setState({
-                  xTabOne: event.nativeEvent.layout.x,
-                })
-              }
-              onPress={() => {
-                this.setState({active: 0}, () => this.handleSlide(xTabOne));
-                console.log(xTabOne);
-              }}>
-              <Text
-                style={this.textStyleChangeOnState(
-                  active,
-                  1,
-                  themeColor.bright,
-                )}>
-                Sign In
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.tabStyle}
-              onLayout={event =>
-                this._setState({
-                  xTabTwo: event.nativeEvent.layout.x,
-                })
-              }
-              onPress={() => {
-                console.log(xTabTwo);
-                this.setState({active: 1}, () => this.handleSlide(xTabTwo));
-              }}>
-              <Text
-                style={this.textStyleChangeOnState(
-                  active,
-                  0,
-                  themeColor.bright,
-                )}>
-                Register
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <KeyboardAvoidingView behavior="padding">
-            <Animated.View
-              style={{
-                transform: [
-                  {
-                    translateX: translateXTabOne,
-                  },
-                ],
-              }}
-              onLayout={event =>
-                this._setState({
-                  translateY: event.nativeEvent.layout.height,
-                })
-              }>
-              <LoginForm />
-            </Animated.View>
-            <Animated.View
-              style={{
-                transform: [
-                  {
-                    translateX: translateXTabTwo,
-                  },
-                  {
-                    translateY: -translateY,
-                  },
-                ],
-              }}
-              onLayout={event =>
-                this._setState({
-                  translateY: event.nativeEvent.layout.height,
-                })
-              }>
-              <RegisterForm onActionDone={this.onRegistrationDone} />
-            </Animated.View>
-          </KeyboardAvoidingView>
+      <KeyboardAvoidingView behavior="padding" style={styles.container}>
+        <View style={styles.logoContainer}>
+          <Image
+            style={styles.icon}
+            resizeMode="contain"
+            source={aqAndULogo}
+          />
+        </View>
+        <View style={styles.tabView}>
+          <Animated.View style={this.animatedTabTransform(translateX)} />
+          <TouchableOpacity
+            style={styles.tabStyle}
+            onLayout={event =>
+              this._setState({
+                xTabOne: event.nativeEvent.layout.x,
+              })
+            }
+            onPress={() => {
+              this.setState({active: 0}, () => this.handleSlide(xTabOne));
+              console.log(xTabOne);
+            }}>
+            <Text
+              style={this.textStyleChangeOnState(
+                active,
+                1,
+                themeColor.bright,
+              )}>
+              Sign In
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.tabStyle}
+            onLayout={event =>
+              this._setState({
+                xTabTwo: event.nativeEvent.layout.x,
+              })
+            }
+            onPress={() => {
+              console.log(xTabTwo);
+              this.setState({active: 1}, () => this.handleSlide(xTabTwo));
+            }}>
+            <Text
+              style={this.textStyleChangeOnState(
+                active,
+                0,
+                themeColor.bright,
+              )}>
+              Register
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <KeyboardAvoidingView behavior="padding">
+          <Animated.View
+            style={{
+              transform: [
+                {
+                  translateX: translateXTabOne,
+                },
+              ],
+            }}
+            onLayout={event =>
+              this._setState({
+                translateY: event.nativeEvent.layout.height,
+              })
+            }>
+            <LoginForm />
+          </Animated.View>
+          <Animated.View
+            style={{
+              transform: [
+                {
+                  translateX: translateXTabTwo,
+                },
+                {
+                  translateY: -translateY,
+                },
+              ],
+            }}
+            onLayout={event =>
+              this._setState({
+                translateY: event.nativeEvent.layout.height,
+              })
+            }>
+            <RegisterForm onActionDone={this.onRegistrationDone} />
+          </Animated.View>
         </KeyboardAvoidingView>
-      </ImageBackground>
+      </KeyboardAvoidingView>
     );
   }
 }
@@ -244,6 +239,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 0,
     alignItems: 'center',
+    backgroundColor: "#5da364"
   },
   icon: {
     flex: -4,

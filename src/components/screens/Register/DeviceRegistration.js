@@ -119,34 +119,60 @@ export default class DeviceRegistration extends Component {
                       text: 'OK',
                       onPress: () => {
                         console.log(
-                          `Connecting to AirU soft AP ${this.state.ssid} / ${this.state.wifiPassword}`,
+                          `Reconnecting to WiFi ${this.state.ssid} / ${this.state.wifiPassword}`,
                         );
-
-                        WifiManager.connectToProtectedSSID(
-                          this.state.ssid,
-                          this.state.wifiPassword,
-                          true,
-                        ).then(
-                          () => {
-                            console.log('Connected');
-                            sleep(5000).then(() => {
-                              this.setState({
-                                wifiCredential: false,
-                                sendingMessageColor: '#fff',
-                                queryWifiStatusColor: '#fff',
+                        WifiManager.disconnect();
+                        sleep(2000).then(() => {
+                          WifiManager.connectToProtectedSSID(
+                            this.state.ssid,
+                            this.state.wifiPassword,
+                            true,
+                          ).then(
+                            () => {
+                              sleep(8000).then(() => {
+                                this.setState({
+                                  wifiCredential: false,
+                                  sendingMessageColor: '#fff',
+                                  queryWifiStatusColor: '#fff',
+                                });
+                                this.props.onRegistrationDone();
                               });
-                              this.props.onRegistrationDone();
-                            });
-                          },
-                          () => {
-                            console.warn('Connection failed!');
-                          },
-                        );
+                            },
+                            () => {
+                              console.warn('Connection failed!');
+                              // Retry if failed
+                              sleep(2000).then(() => {
+                                WifiManager.connectToProtectedSSID(
+                                  this.state.ssid,
+                                  this.state.wifiPassword,
+                                  true,
+                                ).then(
+                                  () => {
+                                    console.log('Connected');
+                                    sleep(8000).then(() => {
+                                      this.setState({
+                                        wifiCredential: false,
+                                        sendingMessageColor: '#fff',
+                                        queryWifiStatusColor: '#fff',
+                                      });
+                                      this.props.onRegistrationDone();
+                                    });
+                                  },
+                                  () => {
+                                    console.warn('Connection failed!');
+                                    
+                                    this.props.onRegistrationDone();
+                                  },
+                                );
+                              });
+                            },
+                          );
+                        });
+
                       },
                     },
                   ],
                 );
-
                 console.log('URC 0');
               } else {
                 Alert.alert(
@@ -163,6 +189,10 @@ export default class DeviceRegistration extends Component {
               }
             });
           });
+        })
+        .catch(err => {
+          console.warn("Cannot configure", err);
+          this.setState({wifiCredential: false});
         });
       }
     });
