@@ -3,7 +3,6 @@ import firebase from 'react-native-firebase';
 import {
   Alert,
   Text,
-  Button,
   StyleSheet,
   Image,
   TouchableOpacity,
@@ -15,6 +14,7 @@ import DeviceRegistration from '../Register/DeviceRegistration';
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import WifiManager from 'react-native-wifi-reborn';
 import Loader from '../../components/Loader';
+import ConfigurationScreen from './ConfigurationScreen/ConfigurationScreen';
 const homebgPath = require('../../../../assets/home_bg.png');
 const configureIconPath = require('../../../../assets/configure_icon.png');
 const configureIconSize = totalSize(4);
@@ -30,72 +30,68 @@ const sleep = milliseconds => {
 };
 const usersCollection = 'users';
 
-const urcCode = {
-  CONNECTED: 0,
-  CONNECTION_ERROR: 1,
-  NOT_CONNECTED: 2,
-};
-
-addDeviceInfoToFireBaseDataBase = async (macAddress) => {
+addDeviceInfoToFireBaseDataBase = async macAddress => {
   console.log('Get devices info!');
   var isDuplicated = false;
   const refUser = await firebase
-  .firestore()
-  .collection(usersCollection)
-  .doc(global.email);
+    .firestore()
+    .collection(usersCollection)
+    .doc(global.email);
 
   console.log('firebase.firestore().runTransaction');
-  await firebase.firestore().runTransaction(async transaction => {
-    console.log('Get devices info!');
-    const doc = await transaction.get(refUser);
+  await firebase
+    .firestore()
+    .runTransaction(async transaction => {
+      console.log('Get devices info!');
+      const doc = await transaction.get(refUser);
 
-    // if it does not exist set the entry
-    if (!doc.exists) {
-      console.log('Not EXISTED');
-      const newDeviceData = new Array();
-      newDeviceData.push(macAddress);
-      transaction.set(refUser, {devices: newDeviceData})
-      return 1;
-    }
-    console.log('EXISTED');
-    const devicesData = doc.data().devices;
-    // Check to see if there is such field
-    if (devicesData) {
-      // Check duplication
-      devicesData.forEach(device => {
-        if (macAddress === device) {
-          console.log('Found duplication');
-          isDuplicated = true;
-        }
-      });
-      if (isDuplicated !== true) {
-        devicesData.push(macAddress);
-        console.log('New Devices data ');
-        console.log(devicesData);
-        // Update new device information to the current table
-        transaction.update(refUser, {
-          devices: devicesData,
-        });
-      } else {
-        console.log('Found duplication');
+      // if it does not exist set the entry
+      if (!doc.exists) {
+        console.log('Not EXISTED');
+        const newDeviceData = new Array();
+        newDeviceData.push(macAddress);
+        transaction.set(refUser, {devices: newDeviceData});
+        return 1;
       }
-    } else {
-      const newDeviceData = new Array();
-      newDeviceData.push(macAddress);
-      transaction.update(refUser, {devices: newDeviceData})
-      return 1;
-    }
-
-  })
-  .catch(err => {
-    console.warn(err);
-  });
-}
+      console.log('EXISTED');
+      const devicesData = doc.data().devices;
+      // Check to see if there is such field
+      if (devicesData) {
+        // Check duplication
+        devicesData.forEach(device => {
+          if (macAddress === device) {
+            console.log('Found duplication');
+            isDuplicated = true;
+          }
+        });
+        if (isDuplicated !== true) {
+          devicesData.push(macAddress);
+          console.log('New Devices data ');
+          console.log(devicesData);
+          // Update new device information to the current table
+          transaction.update(refUser, {
+            devices: devicesData,
+          });
+        } else {
+          console.log('Found duplication');
+        }
+      } else {
+        const newDeviceData = new Array();
+        newDeviceData.push(macAddress);
+        transaction.update(refUser, {devices: newDeviceData});
+        return 1;
+      }
+    })
+    .catch(err => {
+      console.warn(err);
+    });
+};
 export default class HomeScreen extends React.Component {
   constructor() {
     super();
     this.state = {
       cameraScan: false,
+      configurationPage: false,
       isLoggedIn: true,
       softAPssid: wifiPrefix,
       registeringDevice: false,
@@ -103,11 +99,18 @@ export default class HomeScreen extends React.Component {
     };
   }
 
+  configurationPageDone = () => {
+    this.setState({configurationPage: false});
+  };
   deviceRegistrationDone = () => {
-    this.setState({registeringDevice: false, cameraScan: false, isLoading: false});
+    this.setState({
+      registeringDevice: false,
+      cameraScan: false,
+      isLoading: false,
+    });
   };
 
-  onScanSuccess = async (qrData) => {
+  onScanSuccess = async qrData => {
     console.log('Scan success!!!');
     console.log(qrData.data);
     let macAddrNoColons = qrData.data;
@@ -165,26 +168,30 @@ export default class HomeScreen extends React.Component {
   connectionStatusCallBack = status => {
     console.log('isConnected? ' + status);
     if (status) {
-      this.fetchWiFiStatusFromDevice().then(response => {
-        if (response.ok) {
-          console.log('Connected successfully! ', this.state.softAPssid);
-          this.setState({
-            cameraScan: false,
-            registeringDevice: true,
-            isLoading: false,
-          });
-        } else {
-          console.warn('Terrible things happened!');
-          this.setState({
-            cameraScan: false,
-            registeringDevice: false,
-            isLoading: false,
-          });
-        }
-      })
-      .catch(err => {
-        Alert.alert('Make sure you disabled mobile data and device is on!', 'Please retry again after that!');
-      });
+      this.fetchWiFiStatusFromDevice()
+        .then(response => {
+          if (response.ok) {
+            console.log('Connected successfully! ', this.state.softAPssid);
+            this.setState({
+              cameraScan: false,
+              registeringDevice: true,
+              isLoading: false,
+            });
+          } else {
+            console.warn('Terrible things happened!');
+            this.setState({
+              cameraScan: false,
+              registeringDevice: false,
+              isLoading: false,
+            });
+          }
+        })
+        .catch(err => {
+          Alert.alert(
+            'Make sure you disabled mobile data and device is on!',
+            'Please retry again after that!',
+          );
+        });
     } else {
       console.warn('Not connected. retry');
       this.setState({
@@ -234,6 +241,8 @@ export default class HomeScreen extends React.Component {
       return (
         <DeviceRegistration onRegistrationDone={this.deviceRegistrationDone} />
       );
+    } else if (this.state.configurationPage) {
+      return <ConfigurationScreen onDone={this.configurationPageDone}/>;
     } else {
       return (
         <ImageBackground source={homebgPath} style={styles.viewStyle}>
@@ -241,6 +250,7 @@ export default class HomeScreen extends React.Component {
             style={styles.configureIcon}
             onPress={() => {
               console.log('Configuration page');
+              this.setState({configurationPage: true});
             }}>
             <Image
               style={{height: configureIconSize, width: configureIconSize}}
@@ -262,20 +272,6 @@ export default class HomeScreen extends React.Component {
             }}>
             <Text style={styles.plusText}>+</Text>
           </TouchableOpacity>
-          <Button
-            title="Logout"
-            onPress={() => {
-              firebase
-                .auth()
-                .signOut()
-                .then(() => {
-                  console.log('signed out');
-                })
-                .catch(error => {
-                  console.log(error);
-                });
-            }}
-          />
           <Loader
             isLoading={this.state.isLoading}
             indicatorSize={100}
