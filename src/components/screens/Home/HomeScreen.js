@@ -15,6 +15,7 @@ import QRCodeScanner from 'react-native-qrcode-scanner';
 import WifiManager from 'react-native-wifi-reborn';
 import Loader from '../../components/Loader';
 import ConfigurationScreen from './ConfigurationScreen/ConfigurationScreen';
+import SensorsView from './SensorsView/SensorsView'
 const homebgPath = require('../../../../assets/home_bg.png');
 const configureIconPath = require('../../../../assets/configure_icon.png');
 const configureIconSize = totalSize(4);
@@ -272,6 +273,7 @@ export default class HomeScreen extends React.Component {
             }}>
             <Text style={styles.plusText}>+</Text>
           </TouchableOpacity>
+          <SensorsView/>
           <Loader
             isLoading={this.state.isLoading}
             indicatorSize={100}
