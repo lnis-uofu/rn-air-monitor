@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import {ActivityIndicator, StyleSheet, Modal, View} from 'react-native';
+import {StyleSheet, Modal, View} from 'react-native';
 var Spinner = require('react-native-spinkit');
 
 export default class Loader extends Component {
@@ -12,12 +12,6 @@ export default class Loader extends Component {
         animationType={'none'}
         visible={this.props.isLoading}>
         <View style={styles.modalStyle}>
-          {/* <ActivityIndicator
-            style={styles.loadingIcon}
-            size={this.props.indicatorSize}
-            color={this.props.indicatorColor}
-            animating={this.props.isLoading}
-          /> */}
           <Spinner
             style={styles.loadingIcon}
             isVisible={this.props.isLoading}

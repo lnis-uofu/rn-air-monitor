@@ -26,7 +26,7 @@ export default class InputField extends Component {
   focus = () => this.input.focus();
   clear = () => this.input.clear();
 
-  textStyleChangeOnState = color => {
+  textStyleChangeOnState = (borderColor, textColor) => {
     return {
       width: w(80),
       height: h(6),
@@ -34,8 +34,8 @@ export default class InputField extends Component {
       paddingLeft: w(11),
       borderRadius: totalSize(3),
       borderBottomWidth: totalSize(0.15),
-      color: themeColor.bright,
-      borderBottomColor: color,
+      color: textColor,
+      borderBottomColor: borderColor,
     };
   };
 
@@ -44,14 +44,17 @@ export default class InputField extends Component {
       <View style={styles.inputWrapper}>
         <Image source={this.props.source} style={styles.inlineImg} />
         <TextInput
-          style={this.textStyleChangeOnState(this.props.textFieldBoxColor)}
+          style={this.textStyleChangeOnState(
+            this.props.textFieldBoxColor,
+            this.props.textFieldColor,
+          )}
           placeholder={this.props.placeholder}
           secureTextEntry={this.props.secureTextEntry}
           autoCorrect={this.props.autoCorrect}
           autoCapitalize={this.props.autoCapitalize}
           returnKeyType={this.props.returnKeyType}
           maxLength={this.props.maxLength}
-          placeholderTextColor="rgba(255,255,255,0.4)"
+          placeholderTextColor={this.props.placeholderTextColor}
           underlineColorAndroid="transparent"
           onSubmitEditing={this.props.onSubmitEditingFunc}
           onChangeText={this.props.onChangeTextFunc}
@@ -72,6 +75,8 @@ InputField.propTypes = {
   maxLength: PropTypes.number,
   onChangeTextFunc: PropTypes.func,
   textFieldBoxColor: PropTypes.string,
+  textFieldColor: PropTypes.string,
+  placeholderTextColor: PropTypes.string,
   onSubmitEditingFunc: PropTypes.func,
 };
 
@@ -85,7 +90,10 @@ InputField.defaultProps = {
   keyboardType: null,
   secureTextEntry: false,
   textFieldBoxColor: '#ffffff',
+  textFieldColor: themeColor.bright,
+  placeholderTextColor: "rgba(255,255,255,0.4)",
   autoCapitalize: 'none',
+  onChangeTextFunc: () => {},
 };
 
 const styles = StyleSheet.create({

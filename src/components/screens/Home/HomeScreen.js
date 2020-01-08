@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   ImageBackground,
   Platform,
+  Modal,
+  View,
 } from 'react-native';
 import {w, h, totalSize} from '../../../api/Dimensions';
 import DeviceRegistration from '../Register/DeviceRegistration';
@@ -15,9 +17,11 @@ import QRCodeScanner from 'react-native-qrcode-scanner';
 import WifiManager from 'react-native-wifi-reborn';
 import Loader from '../../components/Loader';
 import ConfigurationScreen from './ConfigurationScreen/ConfigurationScreen';
-import SensorsView from './SensorsView/SensorsView'
+import SensorsView from './SensorsView/SensorsView';
+import InputField from '../../components/InputField';
 const homebgPath = require('../../../../assets/home_bg.png');
 const configureIconPath = require('../../../../assets/configure_icon.png');
+const deviceLabel = require('../../../../assets/label_icon.png');
 const configureIconSize = totalSize(4);
 const wifiPrefix = 'AirU-';
 const softAPPassword = 'cleantheair';
@@ -31,9 +35,10 @@ const sleep = milliseconds => {
 };
 const usersCollection = 'users';
 
-addDeviceInfoToFireBaseDataBase = async macAddress => {
+addDeviceInfoToFireBaseDataBase = async (macAddress, label) => {
   console.log('Get devices info!');
   var isDuplicated = false;
+  var dev_map = {mac_add: macAddress, user_label: label};
   const refUser = await firebase
     .firestore()
     .collection(usersCollection)
@@ -56,17 +61,19 @@ addDeviceInfoToFireBaseDataBase = async macAddress => {
       }
       console.log('EXISTED');
       const devicesData = doc.data().devices;
+      console.log(devicesData);
       // Check to see if there is such field
       if (devicesData) {
         // Check duplication
         devicesData.forEach(device => {
-          if (macAddress === device) {
+          if (macAddress === device.mac_add) {
             console.log('Found duplication');
             isDuplicated = true;
           }
         });
         if (isDuplicated !== true) {
-          devicesData.push(macAddress);
+          // devicesData.push(macAddress);
+          devicesData.push(dev_map);
           console.log('New Devices data ');
           console.log(devicesData);
           // Update new device information to the current table
@@ -78,7 +85,8 @@ addDeviceInfoToFireBaseDataBase = async macAddress => {
         }
       } else {
         const newDeviceData = new Array();
-        newDeviceData.push(macAddress);
+        newDeviceData.push(dev_map);
+        // Update new information to database
         transaction.update(refUser, {devices: newDeviceData});
         return 1;
       }
@@ -97,7 +105,9 @@ export default class HomeScreen extends React.Component {
       softAPssid: wifiPrefix,
       registeringDevice: false,
       isLoading: false,
+      isEnteringDeviceLabel: false,
     };
+    this.label = "";
   }
 
   configurationPageDone = () => {
@@ -129,13 +139,14 @@ export default class HomeScreen extends React.Component {
       softAPssid: softAPssid,
     });
     // Update board information to database
-    await addDeviceInfoToFireBaseDataBase(qrData.data);
+    await addDeviceInfoToFireBaseDataBase(qrData.data, this.label);
     // Connect to Soft Access Point on Device
     this.connectToAirUSoftAP(softAPssid);
   };
 
   componentDidMount = async () => {
     console.log('HomeScreen mounted ' + global.email);
+    // await addDeviceInfoToFireBaseDataBase('aa:bB:cc:dd', 'example label');
   };
 
   // Return Response object
@@ -220,6 +231,22 @@ export default class HomeScreen extends React.Component {
     );
   };
 
+  onSubmittingDeviceLabel = () => {
+    // this.label = text;
+    if (this.label.length === 0) {
+      Alert.alert("Please give your AirU a name!");
+      return;
+    }
+    this.setState({
+      cameraScan: true,
+      isEnteringDeviceLabel: false,
+    });
+  };
+
+  labelInputHandler = text => {
+    this.label = text;
+  };
+
   render() {
     if (this.state.cameraScan) {
       return (
@@ -243,7 +270,7 @@ export default class HomeScreen extends React.Component {
         <DeviceRegistration onRegistrationDone={this.deviceRegistrationDone} />
       );
     } else if (this.state.configurationPage) {
-      return <ConfigurationScreen onDone={this.configurationPageDone}/>;
+      return <ConfigurationScreen onDone={this.configurationPageDone} />;
     } else {
       return (
         <ImageBackground source={homebgPath} style={styles.viewStyle}>
@@ -266,19 +293,68 @@ export default class HomeScreen extends React.Component {
                 {
                   text: 'OK',
                   onPress: () => {
-                    this.setState({cameraScan: true});
+                    this.setState({isEnteringDeviceLabel: true});
                   },
                 },
               ]);
             }}>
             <Text style={styles.plusText}>+</Text>
           </TouchableOpacity>
-          <SensorsView/>
+          <SensorsView />
           <Loader
             isLoading={this.state.isLoading}
             indicatorSize={100}
             indicatorColor="#FFF"
           />
+          <Modal
+            style={styles.modalStyle}
+            transparent={true}
+            animationType={'none'}
+            visible={this.state.isEnteringDeviceLabel}>
+            <View style={styles.enterSensorLabelView}>
+              <Text
+                style={[
+                  {
+                    fontSize: totalSize(2.5),
+                    textAlign: 'center',
+                    marginTop: h(3),
+                    marginBottom: h(1.5),
+                  },
+                ]}>
+                What would you like to call your AirU sensor?
+              </Text>
+              <InputField
+                source={deviceLabel}
+                placeholder={'Friendly, descriptive name'}
+                secureTextEntry={false}
+                returnKeyType={'done'}
+                maxLength={25}
+                textFieldBoxColor={'#000'}
+                onSubmitEditingFunc={() =>
+                  this.onSubmittingDeviceLabel()
+                }
+                onChangeTextFunc={this.labelInputHandler}
+                placeHolderTextColor={'#aaa'}
+                textFieldColor={'#000'}
+              />
+              <TouchableOpacity
+                style={styles.doneEnteringLabel}
+                onPress={() => {
+                  this.onSubmittingDeviceLabel();
+                }}>
+                <Text
+                  style={[
+                    {
+                      textAlign: 'center',
+                      fontSize: totalSize(2.5),
+                      fontWeight: 'bold',
+                    },
+                  ]}>
+                  Ok
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </Modal>
         </ImageBackground>
       );
     }
@@ -328,5 +404,29 @@ const styles = StyleSheet.create({
   },
   buttonTouchable: {
     padding: 16,
+  },
+  enterSensorLabelView: {
+    marginTop: h(20),
+    height: h(25),
+    width: w(80),
+    borderRadius: h(5),
+    alignContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+    backgroundColor: 'rgba(255,255,255, 0.9)',
+  },
+  doneEnteringLabel: {
+    marginTop: h(2),
+    width: w(30),
+    height: h(5),
+    alignContent: 'center',
+    borderRadius: totalSize(3),
+    // backgroundColor: '#0f0',
+  },
+  modalStyle: {
+    flex: 1,
+    alignSelf: 'center',
+    flexDirection: 'column',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
 });
