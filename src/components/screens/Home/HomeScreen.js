@@ -48,7 +48,6 @@ addDeviceInfoToFireBaseDataBase = async (macAddress, label) => {
   await firebase
     .firestore()
     .runTransaction(async transaction => {
-      console.log('Get devices info!');
       const doc = await transaction.get(refUser);
 
       // if it does not exist set the entry
@@ -107,7 +106,7 @@ export default class HomeScreen extends React.Component {
       isLoading: false,
       isEnteringDeviceLabel: false,
     };
-    this.label = "";
+    this.label = '';
   }
 
   configurationPageDone = () => {
@@ -234,7 +233,7 @@ export default class HomeScreen extends React.Component {
   onSubmittingDeviceLabel = () => {
     // this.label = text;
     if (this.label.length === 0) {
-      Alert.alert("Please give your AirU a name!");
+      Alert.alert('Please give your AirU a name!');
       return;
     }
     this.setState({
@@ -330,9 +329,7 @@ export default class HomeScreen extends React.Component {
                 returnKeyType={'done'}
                 maxLength={25}
                 textFieldBoxColor={'#000'}
-                onSubmitEditingFunc={() =>
-                  this.onSubmittingDeviceLabel()
-                }
+                onSubmitEditingFunc={() => this.onSubmittingDeviceLabel()}
                 onChangeTextFunc={this.labelInputHandler}
                 placeHolderTextColor={'#aaa'}
                 textFieldColor={'#000'}

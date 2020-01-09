@@ -33,29 +33,29 @@ export class ConfigurationScreen extends Component {
   };
   render() {
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerText}>Configuration Page</Text>
-            </View>
-            <FlatList
-                data={DATA}
-                renderItem={({item}) => (
-                <Item title={item.title} onSelect={this.onSelect} />
-                )}
-            />
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerText}>Configuration Page</Text>
         </View>
+        <FlatList
+          data={DATA}
+          renderItem={({item}) => (
+            <Item title={item.title} onSelect={this.onSelect} />
+          )}
+        />
+      </View>
     );
   }
 }
 const DATA = [
-    {
-        id: "logoutId",
-        title: labels.logOut,
-    },
-    {
-        id: "goBackId",
-        title: labels.goBack,
-    },
+  {
+    id: 'logoutId',
+    title: labels.logOut,
+  },
+  {
+    id: 'goBackId',
+    title: labels.goBack,
+  },
 ];
 
 function Item({title, onSelect}) {
@@ -77,27 +77,27 @@ ConfigurationScreen.defaultProps = {
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    header: {
-        width: w(100),
-        height: h(6),
-        alignItems: 'center',
-        backgroundColor: 'rgba(10,10,10,0.6)',
-        marginBottom: h(4),
-        },
-    headerText: {
-        fontSize: totalSize(2),
-        color: "white",
-        marginVertical: h(1.5),
-    },
-    item: {
-        backgroundColor: 'rgba(10,10,10,0.2)',
-        padding: h(2),
-        marginVertical: h(0.2),
-        alignItems: 'center',
-    },
+  container: {
+    flex: 1,
+  },
+  header: {
+    width: w(100),
+    height: h(6),
+    alignItems: 'center',
+    backgroundColor: 'rgba(10,10,10,0.6)',
+    marginBottom: h(4),
+  },
+  headerText: {
+    fontSize: totalSize(2),
+    color: 'white',
+    marginVertical: h(1.5),
+  },
+  item: {
+    backgroundColor: 'rgba(10,10,10,0.2)',
+    padding: h(2),
+    marginVertical: h(0.2),
+    alignItems: 'center',
+  },
   title: {
     fontSize: totalSize(2),
   },
