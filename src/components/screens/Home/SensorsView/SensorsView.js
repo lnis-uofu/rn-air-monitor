@@ -87,7 +87,6 @@ export class SensorsView extends Component {
       },
     )
       .then(response => {
-        console.log('getPMValue response');
         return response;
       })
       .catch(error => {
@@ -95,7 +94,6 @@ export class SensorsView extends Component {
       });
   };
   componentDidMount = async () => {
-    console.log('Sensor View Mounted');
     var sensors = new Array();
     FireStoreHelpers.getUserDevices().then(userDevices => {
       this.setState({sensorCount: userDevices.length});
@@ -104,13 +102,13 @@ export class SensorsView extends Component {
           if (pmsValue.ok) {
             pmsValue.json().then(responseJson => {
               if (responseJson) {
-                let color = this.pmsColorScale(responseJson[0].AVG_PM25);
+                let color = this.pmsColorScale(responseJson[0].avg_pm25);
                 sensors.push({
-                  pmsValue: responseJson[0].AVG_PM25,
+                  pmsValue: responseJson[0].avg_pm25,
                   color: color,
                   location: device.user_label,
                 });
-                console.log(sensors);
+                // console.log(sensors);
                 this.setState({
                   //Setting the data source
                   dataSource: sensors,
