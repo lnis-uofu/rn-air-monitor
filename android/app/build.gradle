@@ -152,6 +152,11 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            storeFile file('rn_airu_app.keystore')
+            storePassword System.console().readLine("\nKeystore password:")
+            keyAlias 'rn_airu_app'
+            keyPassword System.console().readLine("\nAlias password: ")
     }
     buildTypes {
         debug {
