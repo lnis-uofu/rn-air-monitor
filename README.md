@@ -19,7 +19,7 @@ ${JAVA_HOME} = D:\Program Files\Android\Android Studio\jre\jre
 2. npm install && npm run postinstall
 3. The top-level build.gradle version value
         buildToolsVersion = "28.0.3"
-        minSdkVersion = 16
+        minSdkVersion = 21
         compileSdkVersion = 28
         targetSdkVersion = 28
         supportLibVersion = "28.0.0"
@@ -75,3 +75,6 @@ https://github.com/react-native-community/react-native-permissions/issues/348#is
 
 react-native-qr scanner
 https://github.com/moaazsidat/react-native-qrcode-scanner#readme
+
+react-native-wifi-reborn
+https://github.com/JuanSeBestia/react-native-wifi-reborn
