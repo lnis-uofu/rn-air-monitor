@@ -1,10 +1,10 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import {ActivityIndicator, StyleSheet, Modal, View} from 'react-native';
+import {StyleSheet, Modal, View} from 'react-native';
+var Spinner = require('react-native-spinkit');
 
 export default class Loader extends Component {
   render() {
-    console.log('is loading ' + this.props.isLoading);
     return (
       <Modal
         style={styles.modalStyle}
@@ -12,11 +12,12 @@ export default class Loader extends Component {
         animationType={'none'}
         visible={this.props.isLoading}>
         <View style={styles.modalStyle}>
-          <ActivityIndicator
+          <Spinner
             style={styles.loadingIcon}
+            isVisible={this.props.isLoading}
             size={this.props.indicatorSize}
+            type={'Bounce'}
             color={this.props.indicatorColor}
-            animating={this.props.isLoading}
           />
         </View>
       </Modal>
@@ -26,7 +27,7 @@ export default class Loader extends Component {
 
 Loader.propTypes = {
   isLoading: PropTypes.bool.isRequired,
-  indicatorSize: PropTypes.string,
+  indicatorSize: PropTypes.number,
   indicatorColor: PropTypes.string,
   backGroundColor: PropTypes.string,
 };
@@ -40,6 +41,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     flexDirection: 'column',
-    backgroundColor: 'rgba(32, 32, 32, 0.3)',
+    backgroundColor: 'rgba(32, 32, 32, 0.6)',
   },
 });
