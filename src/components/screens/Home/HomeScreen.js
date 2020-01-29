@@ -19,6 +19,12 @@ import Loader from '../../components/Loader';
 import ConfigurationScreen from './ConfigurationScreen/ConfigurationScreen';
 import SensorsView from './SensorsView/SensorsView';
 import InputField from '../../components/InputField';
+import RadioForm, {
+  RadioButton,
+  RadioButtonInput,
+  RadioButtonLabel,
+} from 'react-native-simple-radio-button';
+
 const homebgPath = require('../../../../assets/home_bg.png');
 const configureIconPath = require('../../../../assets/configure_icon.png');
 const deviceLabel = require('../../../../assets/label_icon.png');
@@ -34,6 +40,10 @@ const sleep = milliseconds => {
   return new Promise(resolve => setTimeout(resolve, milliseconds));
 };
 const usersCollection = 'users';
+var radio_props = [
+  {label: 'Wall Mounted', value: 0},
+  {label: 'Wearable', value: 1},
+];
 
 addDeviceInfoToFireBaseDataBase = async (macAddress, label) => {
   console.log('Get devices info!');
@@ -105,6 +115,8 @@ export default class HomeScreen extends React.Component {
       registeringDevice: false,
       isLoading: false,
       isEnteringDeviceLabel: false,
+      deviceTypeConfirm: false,
+      isWearable: false,
     };
     this.label = '';
   }
@@ -246,6 +258,40 @@ export default class HomeScreen extends React.Component {
     this.label = text;
   };
 
+  deviceTypesRadioButtons = () => {
+    return (
+      <View style={styles.enterSensorLabelView}>
+        <Text
+          style={[
+            {
+              fontSize: totalSize(2.5),
+              textAlign: 'center',
+              marginTop: h(3),
+              marginBottom: h(1.5),
+            },
+          ]}>
+          Select your device type!
+        </Text>
+        <RadioForm
+          radio_props={radio_props}
+          initial={0}
+          buttonColor={'#20d440'}
+          selectedButtonColor={'#20d440'}
+          onPress={value => {
+            if (value === 1) {
+              this.setState({isWearable: true});
+            } else {
+              this.setState({isWearable: false});
+            }
+            this.setState({
+              isEnteringDeviceLabel: true,
+              deviceTypeConfirm: false,
+            });
+          }}
+        />
+      </View>
+    );
+  };
   render() {
     if (this.state.cameraScan) {
       return (
@@ -266,7 +312,10 @@ export default class HomeScreen extends React.Component {
       );
     } else if (this.state.registeringDevice) {
       return (
-        <DeviceRegistration onRegistrationDone={this.deviceRegistrationDone} />
+        <DeviceRegistration
+          onRegistrationDone={this.deviceRegistrationDone}
+          isWearable={this.state.isWearable}
+        />
       );
     } else if (this.state.configurationPage) {
       return <ConfigurationScreen onDone={this.configurationPageDone} />;
@@ -291,8 +340,8 @@ export default class HomeScreen extends React.Component {
               Alert.alert('Disable your mobile data', mobileDataAlertMessage, [
                 {
                   text: 'OK',
-                  onPress: () => {
-                    this.setState({isEnteringDeviceLabel: true});
+                  onPress: async () => {
+                    this.setState({deviceTypeConfirm: true});
                   },
                 },
               ]);
@@ -305,6 +354,13 @@ export default class HomeScreen extends React.Component {
             indicatorSize={100}
             indicatorColor="#FFF"
           />
+          <Modal
+            style={styles.modalStyle}
+            transparent={true}
+            animationType={'none'}
+            visible={this.state.deviceTypeConfirm}>
+            {this.deviceTypesRadioButtons()}
+          </Modal>
           <Modal
             style={styles.modalStyle}
             transparent={true}
