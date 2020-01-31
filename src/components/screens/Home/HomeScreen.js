@@ -19,11 +19,8 @@ import Loader from '../../components/Loader';
 import ConfigurationScreen from './ConfigurationScreen/ConfigurationScreen';
 import SensorsView from './SensorsView/SensorsView';
 import InputField from '../../components/InputField';
-import RadioForm, {
-  RadioButton,
-  RadioButtonInput,
-  RadioButtonLabel,
-} from 'react-native-simple-radio-button';
+import RadioForm from 'react-native-simple-radio-button';
+import Geolocation from '@react-native-community/geolocation';
 
 const homebgPath = require('../../../../assets/home_bg.png');
 const configureIconPath = require('../../../../assets/configure_icon.png');
@@ -154,9 +151,12 @@ export default class HomeScreen extends React.Component {
     // Connect to Soft Access Point on Device
     this.connectToAirUSoftAP(softAPssid);
   };
-
   componentDidMount = async () => {
     console.log('HomeScreen mounted ' + global.email);
+    // var dates = Date.now();
+    // console.log(dates);
+    // await this.findCoordinates('TESTING');
+    // console.log('After finding');
     // await addDeviceInfoToFireBaseDataBase('aa:bB:cc:dd', 'example label');
   };
 
@@ -243,15 +243,24 @@ export default class HomeScreen extends React.Component {
   };
 
   onSubmittingDeviceLabel = () => {
-    // this.label = text;
     if (this.label.length === 0) {
       Alert.alert('Please give your AirU a name!');
       return;
     }
-    this.setState({
-      cameraScan: true,
-      isEnteringDeviceLabel: false,
-    });
+    // skip the camera scan when it is wearable device
+    if (this.state.isWearable) {
+      this.setState({
+        cameraScan: false,
+        registeringDevice: true,
+        isLoading: false,
+        isEnteringDeviceLabel: false,
+      });
+    } else {
+      this.setState({
+        cameraScan: true,
+        isEnteringDeviceLabel: false,
+      });
+    }
   };
 
   labelInputHandler = text => {

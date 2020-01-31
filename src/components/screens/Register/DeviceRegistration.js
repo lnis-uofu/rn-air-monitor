@@ -14,6 +14,7 @@ import InputField from '../../components/InputField';
 import {themeColor} from '../../../../App';
 import Loader from '../../components/Loader';
 import WifiManager from 'react-native-wifi-reborn';
+import BleDeviceRegistration from './BleDeviceRegistration/BleDeviceRegistration';
 var Spinner = require('react-native-spinkit');
 
 const homebgPath = require('../../../../assets/home_bg.png');
@@ -102,98 +103,99 @@ export default class DeviceRegistration extends Component {
       } else {
         // Status code is 200. Continue with checking the connection
         // Wait for wifi to be configured on device
-        sleep(15000).then(() => {
-          this.setState({sendingMessageColor: '#2bff59'});
-          this.fetchWiFiStatusFromDevice().then(responseOne => {
-            responseOne.json().then(responseJson => {
-              console.log('body JSON');
-              console.log(responseJson);
-              if (responseJson.urc === 0) {
-                // Connected, good
-                // Disconnect with device, reconnect to previous WiFi
-                Alert.alert(
-                  'Congratulation',
-                  'Your device has been connected to WiFi successfully',
-                  [
-                    {
-                      text: 'OK',
-                      onPress: () => {
-                        console.log(
-                          `Reconnecting to WiFi ${this.state.ssid} / ${this.state.wifiPassword}`,
-                        );
-                        WifiManager.disconnect();
-                        sleep(2000).then(() => {
-                          WifiManager.connectToProtectedSSID(
-                            this.state.ssid,
-                            this.state.wifiPassword,
-                            true,
-                          ).then(
-                            () => {
-                              sleep(8000).then(() => {
-                                this.setState({
-                                  wifiCredential: false,
-                                  sendingMessageColor: '#fff',
-                                  queryWifiStatusColor: '#fff',
-                                });
-                                this.props.onRegistrationDone();
-                              });
-                            },
-                            () => {
-                              console.warn('Connection failed!');
-                              // Retry if failed
-                              sleep(2000).then(() => {
-                                WifiManager.connectToProtectedSSID(
-                                  this.state.ssid,
-                                  this.state.wifiPassword,
-                                  true,
-                                ).then(
-                                  () => {
-                                    console.log('Connected');
-                                    sleep(8000).then(() => {
-                                      this.setState({
-                                        wifiCredential: false,
-                                        sendingMessageColor: '#fff',
-                                        queryWifiStatusColor: '#fff',
-                                      });
-                                      this.props.onRegistrationDone();
-                                    });
-                                  },
-                                  () => {
-                                    console.warn('Connection failed!');
-                                    
-                                    this.props.onRegistrationDone();
-                                  },
-                                );
-                              });
-                            },
+        sleep(15000)
+          .then(() => {
+            this.setState({sendingMessageColor: '#2bff59'});
+            this.fetchWiFiStatusFromDevice().then(responseOne => {
+              responseOne.json().then(responseJson => {
+                console.log('body JSON');
+                console.log(responseJson);
+                if (responseJson.urc === 0) {
+                  // Connected, good
+                  // Disconnect with device, reconnect to previous WiFi
+                  Alert.alert(
+                    'Congratulation',
+                    'Your device has been connected to WiFi successfully',
+                    [
+                      {
+                        text: 'OK',
+                        onPress: () => {
+                          console.log(
+                            `Reconnecting to WiFi ${this.state.ssid}/
+                            ${this.state.wifiPassword}`,
                           );
-                        });
+                          WifiManager.disconnect();
+                          sleep(2000).then(() => {
+                            WifiManager.connectToProtectedSSID(
+                              this.state.ssid,
+                              this.state.wifiPassword,
+                              true,
+                            ).then(
+                              () => {
+                                sleep(8000).then(() => {
+                                  this.setState({
+                                    wifiCredential: false,
+                                    sendingMessageColor: '#fff',
+                                    queryWifiStatusColor: '#fff',
+                                  });
+                                  this.props.onRegistrationDone();
+                                });
+                              },
+                              () => {
+                                console.warn('Connection failed!');
+                                // Retry if failed
+                                sleep(2000).then(() => {
+                                  WifiManager.connectToProtectedSSID(
+                                    this.state.ssid,
+                                    this.state.wifiPassword,
+                                    true,
+                                  ).then(
+                                    () => {
+                                      console.log('Connected');
+                                      sleep(8000).then(() => {
+                                        this.setState({
+                                          wifiCredential: false,
+                                          sendingMessageColor: '#fff',
+                                          queryWifiStatusColor: '#fff',
+                                        });
+                                        this.props.onRegistrationDone();
+                                      });
+                                    },
+                                    () => {
+                                      console.warn('Connection failed!');
 
+                                      this.props.onRegistrationDone();
+                                    },
+                                  );
+                                });
+                              },
+                            );
+                          });
+                        },
                       },
-                    },
-                  ],
-                );
-                console.log('URC 0');
-              } else {
-                Alert.alert(
-                  'Fail to connect to wifi',
-                  `Make sure you entered the correct credential 
+                    ],
+                  );
+                  console.log('URC 0');
+                } else {
+                  Alert.alert(
+                    'Fail to connect to wifi',
+                    `Make sure you entered the correct credential 
                   '${this.state.ssid}/${this.state.wifiPassword}'
                   or Make sure your WiFi Access Point is up!`,
-                );
-                this.setState({
-                  wifiCredential: false,
-                });
+                  );
+                  this.setState({
+                    wifiCredential: false,
+                  });
 
-                console.log('URC 1');
-              }
+                  console.log('URC 1');
+                }
+              });
             });
+          })
+          .catch(err => {
+            console.warn('Cannot configure', err);
+            this.setState({wifiCredential: false});
           });
-        })
-        .catch(err => {
-          console.warn("Cannot configure", err);
-          this.setState({wifiCredential: false});
-        });
       }
     });
   };
@@ -240,90 +242,110 @@ export default class DeviceRegistration extends Component {
   };
 
   render() {
-    return (
-      <ImageBackground source={homebgPath} style={styles.backgroundStyle}>
-        <View style={styles.headerStyle}>
-          <TouchableOpacity
-            style={styles.roundTouchable}
-            onPress={this.props.onRegistrationDone}>
-            <Text style={styles.cancelTextStyle}>{backText}</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTextStyle}>WiFi Credentials</Text>
-        </View>
+    if (!this.props.isWearable) {
+      return (
+        <ImageBackground source={homebgPath} style={styles.backgroundStyle}>
+          <View style={styles.headerStyle}>
+            <TouchableOpacity
+              style={styles.roundTouchable}
+              onPress={this.props.onRegistrationDone}>
+              <Text style={styles.cancelTextStyle}>{backText}</Text>
+            </TouchableOpacity>
+            <Text style={styles.headerTextStyle}>WiFi Credentials</Text>
+          </View>
 
-        <View style={styles.credentialContainerStyle}>
-          <InputField
-            source={emailLogo}
-            placeholder={'WiFi SSID'}
-            secureTextEntry={false}
-            autoCorrect={false}
-            returnKeyType={'next'}
-            maxLength={25}
-            textFieldBoxColor={this.state.ssidInputThemeColor}
-            onSubmitEditingFunc={({nativeEvent}) =>
-              this.focusPasswordAction(nativeEvent.text)
-            }
-            onChangeTextFunc={this.ssidInputHandler}
-            ref={input => {
-              this.ssidInput = input;
-            }}
-          />
-          <InputField
-            source={passwordLogo}
-            placeholder={'PASSWORD'}
-            secureTextEntry={true}
-            autoCorrect={false}
-            returnKeyType={'done'}
-            maxLength={25}
-            textFieldBoxColor={this.state.wiFiPwdInputThemeColor}
-            onSubmitEditingFunc={this.wifiCredsDone}
-            onChangeTextFunc={this.pwdInputHandler}
-            ref={input => {
-              this.passwordInput = input;
-            }}
-          />
-        </View>
-        <View style={styles.tabView}>
-          <TouchableOpacity
-            style={styles.NextButtonStyle}
-            onPress={this.wifiCredsDone}>
-            <Text style={styles.nextTextStyle}>Next</Text>
-          </TouchableOpacity>
-        </View>
-        <Modal
-          transparent={true}
-          animationType={'none'}
-          visible={this.state.wifiCredential}>
-          <Loader
-            isLoading={this.state.wifiCredential}
-            indicatorSize={100}
-            indicatorColor="#FFF"
-          />
-          <View style={styles.registrationProcessTextStyle}>
-            <Text style={{color: this.state.sendingMessageColor}}>
-              Sending request to device...
-            </Text>
-            <Text style={{color: this.state.sendingMessageColor}}>
-              Received Response OK...
-            </Text>
-            <Text style={{color: this.state.queryWifiStatusColor}}>
-              Querying wifi status...
+          <View style={styles.credentialContainerStyle}>
+            <InputField
+              source={emailLogo}
+              placeholder={'WiFi SSID'}
+              secureTextEntry={false}
+              autoCorrect={false}
+              returnKeyType={'next'}
+              maxLength={25}
+              textFieldBoxColor={this.state.ssidInputThemeColor}
+              onSubmitEditingFunc={({nativeEvent}) =>
+                this.focusPasswordAction(nativeEvent.text)
+              }
+              onChangeTextFunc={this.ssidInputHandler}
+              ref={input => {
+                this.ssidInput = input;
+              }}
+            />
+            <InputField
+              source={passwordLogo}
+              placeholder={'PASSWORD'}
+              secureTextEntry={true}
+              autoCorrect={false}
+              returnKeyType={'done'}
+              maxLength={25}
+              textFieldBoxColor={this.state.wiFiPwdInputThemeColor}
+              onSubmitEditingFunc={this.wifiCredsDone}
+              onChangeTextFunc={this.pwdInputHandler}
+              ref={input => {
+                this.passwordInput = input;
+              }}
+            />
+          </View>
+          <View style={styles.tabView}>
+            <TouchableOpacity
+              style={styles.NextButtonStyle}
+              onPress={this.wifiCredsDone}>
+              <Text style={styles.nextTextStyle}>Next</Text>
+            </TouchableOpacity>
+          </View>
+          <Modal
+            transparent={true}
+            animationType={'none'}
+            visible={this.state.wifiCredential}>
+            <Loader
+              isLoading={this.state.wifiCredential}
+              indicatorSize={100}
+              indicatorColor="#FFF"
+            />
+            <View style={styles.registrationProcessTextStyle}>
+              <Text style={{color: this.state.sendingMessageColor}}>
+                Sending request to device...
+              </Text>
+              <Text style={{color: this.state.sendingMessageColor}}>
+                Received Response OK...
+              </Text>
+              <Text style={{color: this.state.queryWifiStatusColor}}>
+                Querying wifi status...
+              </Text>
+            </View>
+          </Modal>
+        </ImageBackground>
+      );
+    } else {
+      return (
+        <ImageBackground source={homebgPath} style={styles.backgroundStyle}>
+          <View style={styles.headerStyle}>
+            <TouchableOpacity
+              style={styles.roundTouchable}
+              onPress={this.props.onRegistrationDone}>
+              <Text style={styles.cancelTextStyle}>{backText}</Text>
+            </TouchableOpacity>
+            <Text style={styles.headerTextStyle}>
+              Choose Your Wearable device
             </Text>
           </View>
-        </Modal>
-      </ImageBackground>
-    );
+          <BleDeviceRegistration />
+        </ImageBackground>
+      );
+    }
   }
 }
 
 DeviceRegistration.propTypes = {
   onRegistrationDone: PropTypes.func,
+  isWearable: PropTypes.bool,
 };
 
 DeviceRegistration.defaultProps = {
   onRegistrationDone: () => {
     console.log('No function bind!!??');
   },
+  isWearable: false,
 };
 
 const styles = StyleSheet.create({
