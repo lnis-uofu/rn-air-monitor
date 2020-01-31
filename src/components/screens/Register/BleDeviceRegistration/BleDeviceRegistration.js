@@ -25,6 +25,7 @@ const pms_service = '000000ff-0000-1000-8000-00805f9b34fb';
 const pms_service_read_noti = '0000ff01-0000-1000-8000-00805f9b34fb';
 const pms_service_write = '0000ff03-0000-1000-8000-00805f9b34fb';
 
+// @todo: Add mac address to firebase coresponding to the user
 export default class BleDeviceRegistration extends Component {
   constructor() {
     super();
@@ -104,12 +105,12 @@ export default class BleDeviceRegistration extends Component {
     this.setState({appState: nextAppState});
   }
 
-  componentWillUnmount() {
-    this.handlerDiscover.remove();
-    this.handlerStop.remove();
-    this.handlerDisconnect.remove();
-    this.handlerUpdate.remove();
-  }
+  // componentWillUnmount() {
+  //   this.handlerDiscover.remove();
+  //   this.handlerStop.remove();
+  //   this.handlerDisconnect.remove();
+  //   this.handlerUpdate.remove();
+  // }
 
   handleDisconnectedPeripheral(data) {
     let peripherals = this.state.peripherals;
@@ -145,7 +146,6 @@ export default class BleDeviceRegistration extends Component {
           a = a + String.fromCharCode(byte);
         });
         console.log(a);
-        a = '{"PM1":0.30,"PM25":0.03,"PM10":0.10}';
         var dataObj = JSON.parse(a);
         dataObj.DEVICE_ID = peripheral.split(':').join('');
         dataObj.LAT = position.coords.latitude;
@@ -159,24 +159,24 @@ export default class BleDeviceRegistration extends Component {
   findCoordinates = () => {
     Geolocation.getCurrentPosition(
       this.geoOnSuccess,
-      error => Alert.alert(error.message),
-      {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
+      error => console.warn(error.message),
+      {enableHighAccuracy: false, timeout: 10000, maximumAge: 1000},
     );
   };
 
   addDateToWearableDataObject = dataObj => {
     dataObj.TIMESTAMP = '';
-    var dates = Date.now();
+    var dates = Math.floor(Date.now() / 1000);
     console.log(dates);
     dataObj.TIMESTAMP = dates;
     return dataObj;
   };
   sendWearableDataToServer = dataObj => {
     console.log(dataObj);
+    console.log(JSON.stringify(dataObj));
     fetch(GlobalConstants.SERVER_DOMAIN_NAME + GlobalConstants.SAVE_WEAR_DATA, {
       method: 'POST',
       headers: {
-        Accept: 'application/json',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(dataObj),
@@ -330,16 +330,21 @@ export default class BleDeviceRegistration extends Component {
           <FlatList
             data={list}
             renderItem={({item}) => {
-              console.log(item);
+              console.log(item.name);
               const color = item.connected ? '#64a16d' : '#90de9c';
-              return (
-                <TouchableOpacity onPress={() => this.test(item)}>
-                  <View style={[styles.row, {backgroundColor: color}]}>
-                    <Text style={styles.bleDeviceName}>{item.name}</Text>
-                    <Text style={styles.bleMacAddr}>{item.id}</Text>
-                  </View>
-                </TouchableOpacity>
-              );
+              if (
+                item.name &&
+                item.name.includes(GlobalConstants.WEARABLE_NAME_PREFIX) > 0
+              ) {
+                return (
+                  <TouchableOpacity onPress={() => this.test(item)}>
+                    <View style={[styles.row, {backgroundColor: color}]}>
+                      <Text style={styles.bleDeviceName}>{item.name}</Text>
+                      <Text style={styles.bleMacAddr}>{item.id}</Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              }
             }}
             // keyExtractor={item => item.id}
           />

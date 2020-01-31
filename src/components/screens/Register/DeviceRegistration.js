@@ -325,9 +325,7 @@ export default class DeviceRegistration extends Component {
               onPress={this.props.onRegistrationDone}>
               <Text style={styles.cancelTextStyle}>{backText}</Text>
             </TouchableOpacity>
-            <Text style={styles.headerTextStyle}>
-              Choose Your Wearable device
-            </Text>
+            <Text style={styles.headerTextStyle}>Wearable Devices</Text>
           </View>
           <BleDeviceRegistration />
         </ImageBackground>

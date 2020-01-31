@@ -153,11 +153,13 @@ export default class HomeScreen extends React.Component {
   };
   componentDidMount = async () => {
     console.log('HomeScreen mounted ' + global.email);
-    // var dates = Date.now();
-    // console.log(dates);
-    // await this.findCoordinates('TESTING');
-    // console.log('After finding');
-    // await addDeviceInfoToFireBaseDataBase('aa:bB:cc:dd', 'example label');
+    Geolocation.getCurrentPosition(
+      position => {
+        console.log(position);
+      },
+      error => Alert.alert(error.message),
+      {enableHighAccuracy: true, timeout: 200000, maximumAge: 1000},
+    );
   };
 
   // Return Response object
