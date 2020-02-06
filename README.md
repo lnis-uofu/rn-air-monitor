@@ -78,3 +78,7 @@ https://github.com/moaazsidat/react-native-qrcode-scanner#readme
 
 react-native-wifi-reborn
 https://github.com/JuanSeBestia/react-native-wifi-reborn
+
+**Android release**
+npm run bundle-android
+cd android && ./gradlew assembleRelease

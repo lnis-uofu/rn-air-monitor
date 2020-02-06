@@ -3,7 +3,7 @@ import firebase from 'react-native-firebase';
 
 export default class FireStoreHelper {
   static async getUserDevices() {
-    console.log('getUserDevices');
+    console.log('getUserDevices ' + global.email);
     var devicesData;
     const user = await firebase
       .firestore()
@@ -17,7 +17,9 @@ export default class FireStoreHelper {
         devicesData = await doc.data().devices;
         console.log(devicesData);
       })
-      .catch(err => {});
+      .catch(err => {
+        console.log('GetUserDevices err' + err);
+      });
     return await Promise.resolve(devicesData);
   }
 }

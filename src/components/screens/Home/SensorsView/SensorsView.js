@@ -8,9 +8,11 @@ import {
   Alert,
 } from 'react-native';
 import {h, w, totalSize} from '../../../../api/Dimensions';
-import FireStoreHelpers from '../../../fireStoreHelpers/fireStoreHelpers';
 import GlobalConstants from '../../../Constants/globalConstants.js';
-const locations = 'Retrieving Data...';
+import FireStoreConstants from '../../../Constants/fireStoreConstants';
+import firebase from 'react-native-firebase';
+
+const labels = 'Retrieving Data...';
 export class SensorsView extends Component {
   constructor() {
     super();
@@ -47,7 +49,7 @@ export class SensorsView extends Component {
         return {
           pmsValue: pmsValue,
           color: color,
-          location: locations,
+          label: labels,
         };
       },
     );
@@ -93,9 +95,31 @@ export class SensorsView extends Component {
         console.warn('getPMValue error code: --> ' + error);
       });
   };
+
+  async getUserDevices() {
+    console.log('getUserDevices ' + global.email);
+    var devicesData;
+    const user = await firebase
+      .firestore()
+      .collection(FireStoreConstants.collections.users)
+      .doc(global.email);
+    console.log('firebase.firestore().runTransaction');
+    await firebase
+      .firestore()
+      .runTransaction(async transaction => {
+        const doc = await transaction.get(user);
+        devicesData = await doc.data().devices;
+        console.log(devicesData);
+      })
+      .catch(err => {
+        console.log('GetUserDevices err' + err);
+      });
+    return await Promise.resolve(devicesData);
+  }
+
   componentDidMount = async () => {
     var sensors = new Array();
-    FireStoreHelpers.getUserDevices().then(userDevices => {
+    this.getUserDevices().then(userDevices => {
       this.setState({sensorCount: userDevices.length});
       userDevices.forEach(device => {
         this.getPMValue(device.mac_add).then(pmsValue => {
@@ -106,7 +130,7 @@ export class SensorsView extends Component {
                 sensors.push({
                   pmsValue: responseJson[0].avg_pm25,
                   color: color,
-                  location: device.user_label,
+                  label: device.user_label,
                 });
                 // console.log(sensors);
                 this.setState({
@@ -140,7 +164,7 @@ export class SensorsView extends Component {
                   ]}>
                   <Text style={styles.sensorPmsData}>{item.pmsValue}</Text>
                 </TouchableOpacity>
-                <Text style={styles.sensorLabel}>{item.location}</Text>
+                <Text style={styles.sensorLabel}>{item.label}</Text>
               </View>
             )}
             //Setting the number of column
