@@ -21,11 +21,17 @@ import GlobalConstants from '../../../Constants/globalConstants';
 const window = Dimensions.get('window');
 const BleManagerModule = NativeModules.BleManager;
 const bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
+
+/**
+ * These UUIDs base on the configuration on the device side
+ * @Note: Once we change these UUIDs, the same changes need to be made on the firmware side and vice versa
+ */
 const pms_service = '000000ff-0000-1000-8000-00805f9b34fb';
 const pms_service_read_noti = '0000ff01-0000-1000-8000-00805f9b34fb';
 const pms_service_write = '0000ff03-0000-1000-8000-00805f9b34fb';
+const wifi_addr_service_read = '0000ff04-0000-1000-8000-00805f9b34fb';
 
-// @todo: Add mac address to firebase coresponding to the user
+// @todo: Add mac address to firebase corresponding to the user
 export default class BleDeviceRegistration extends Component {
   constructor() {
     super();
@@ -37,7 +43,6 @@ export default class BleDeviceRegistration extends Component {
       location: {},
     };
 
-    var currentPeripheral;
     this.handleDiscoverPeripheral = this.handleDiscoverPeripheral.bind(this);
     this.handleStopScan = this.handleStopScan.bind(this);
     this.handleUpdateValueForCharacteristic = this.handleUpdateValueForCharacteristic.bind(
@@ -105,6 +110,10 @@ export default class BleDeviceRegistration extends Component {
     this.setState({appState: nextAppState});
   }
 
+  /**
+   * Commented out to keep data posted to database after unmount
+   * There would likely some memory issue here if keep mounting and unmount this screen
+   */
   // componentWillUnmount() {
   //   this.handlerDiscover.remove();
   //   this.handlerStop.remove();
@@ -135,19 +144,24 @@ export default class BleDeviceRegistration extends Component {
     this.findCoordinates();
   }
 
+  /**
+   * Got Geographical location successfully.
+   * Then read and parse BLE data package in order to send to Big Query db
+   *  */
   geoOnSuccess = position => {
-    console.log(position);
     var peripheral = this.currentPeripheral;
     BleManager.read(peripheral, pms_service, pms_service_read_noti).then(
       readData => {
         var a = '';
-        // console.log(String.fromCharCode(readData));
+        /**
+         * BLE package is in JSON String format and received as bytes array.
+         * Hence need to parse from byte to String then from String to JSON object
+         *  */
         readData.forEach(byte => {
           a = a + String.fromCharCode(byte);
         });
         console.log(a);
         var dataObj = JSON.parse(a);
-        dataObj.DEVICE_ID = peripheral.split(':').join('');
         dataObj.LAT = position.coords.latitude;
         dataObj.LON = position.coords.longitude;
         dataObj = this.addDateToWearableDataObject(dataObj);
@@ -156,6 +170,35 @@ export default class BleDeviceRegistration extends Component {
     );
   };
 
+  /**
+   * Read ESP32 WiFi mac address.
+   * In ESP32, we have 2 mac addresses: WiFi and BLE.
+   * WiFi address is the default address that we would see a lot using Espressif tool kit
+   * WiFi address is the one we have been using to manage sensors as well
+   */
+  readWiFiAddress = peripheral => {
+    return new Promise(function(resolve, reject) {
+      BleManager.read(peripheral, pms_service, wifi_addr_service_read)
+        .then(readData => {
+          var a = '';
+          /**
+           * Hence need to parse from byte to String then from String to JSON object
+           *  */
+          readData.forEach(byte => {
+            a = a + String.fromCharCode(byte);
+          });
+          console.log('read wifi address ' + a);
+          resolve(a);
+        })
+        .catch(err => {
+          reject(err);
+        });
+    });
+  };
+
+  /**
+   * Get Coordinates from GPS
+   */
   findCoordinates = () => {
     Geolocation.getCurrentPosition(
       this.geoOnSuccess,
@@ -167,13 +210,25 @@ export default class BleDeviceRegistration extends Component {
   addDateToWearableDataObject = dataObj => {
     dataObj.TIMESTAMP = '';
     var dates = Math.floor(Date.now() / 1000);
-    console.log(dates);
     dataObj.TIMESTAMP = dates;
     return dataObj;
   };
+
+  /**
+   * Make an API request to our internal server in order to save collected sensor data to Big Query on GCP
+   * Sensor data:
+   *   dataObj {
+        PM1:
+        PM25:
+        PM10:
+        DEVICE_ID:
+        LAT:
+        LON:
+        TIMESTAMP:
+        }
+   *  */
   sendWearableDataToServer = dataObj => {
     console.log(dataObj);
-    console.log(JSON.stringify(dataObj));
     fetch(GlobalConstants.SERVER_DOMAIN_NAME + GlobalConstants.SAVE_WEAR_DATA, {
       method: 'POST',
       headers: {
@@ -189,6 +244,9 @@ export default class BleDeviceRegistration extends Component {
     this.setState({scanning: false});
   }
 
+  /**
+   * BLE scan
+   */
   startScan() {
     if (!this.state.scanning) {
       this.setState({peripherals: new Map()});
@@ -199,6 +257,9 @@ export default class BleDeviceRegistration extends Component {
     }
   }
 
+  /**
+   * Retrieve Connected BLE device
+   */
   retrieveConnected() {
     BleManager.getConnectedPeripherals([]).then(results => {
       if (results.length == 0) {
@@ -224,7 +285,14 @@ export default class BleDeviceRegistration extends Component {
     }
   }
 
-  test(peripheral) {
+  /**
+   * @param {BLE Peripheral Object} peripheral {name, id, connected}
+   * if this Peripheral is connected then disconnect
+   * else, connect to this BLE devices and subscribe notification on the PMS uuid and get sensor data in a certain rate define by firmware
+   *
+   * @todo: data rate to be configurable
+   */
+  handleSelectingBLEDevice(peripheral) {
     if (peripheral) {
       if (peripheral.connected) {
         BleManager.disconnect(peripheral.id);
@@ -251,8 +319,15 @@ export default class BleDeviceRegistration extends Component {
               });*/
               BleManager.retrieveServices(peripheral.id).then(
                 peripheralInfo => {
-                  console.log(peripheralInfo);
+                  // console.log(peripheralInfo);
                   setTimeout(() => {
+                    this.readWiFiAddress(peripheral.id)
+                      .then(data => {
+                        console.log(data);
+                      })
+                      .catch(err => {
+                        console.warn(err);
+                      });
                     BleManager.startNotification(
                       peripheral.id,
                       pms_service,
@@ -260,26 +335,6 @@ export default class BleDeviceRegistration extends Component {
                     )
                       .then(() => {
                         console.log('Started notification on ' + peripheral.id);
-                        // setTimeout(() => {
-                        //   BleManager.write(
-                        //     peripheral.id,
-                        //     pms_service,
-                        //     pms_service_write,
-                        //     [0],
-                        //   ).then(() => {
-                        //     console.log('Writed NORMAL crust');
-                        //     BleManager.write(
-                        //       peripheral.id,
-                        //       pms_service,
-                        //       pms_service_write,
-                        //       [1, 95],
-                        //     ).then(() => {
-                        //       console.log(
-                        //         'Writed 351 temperature, the pizza should be BAKED',
-                        //       );
-                        //     });
-                        //   });
-                        // }, 500);
                       })
                       .catch(error => {
                         console.log('Notification error', error);
@@ -332,12 +387,17 @@ export default class BleDeviceRegistration extends Component {
             renderItem={({item}) => {
               console.log(item.name);
               const color = item.connected ? '#64a16d' : '#90de9c';
+              /**
+               * Only show Sensor from AirU with prefix name as WAIRU
+               * Prefer GlobalConstants.WEARABLE_NAME_PREFIX
+               */
               if (
                 item.name &&
                 item.name.includes(GlobalConstants.WEARABLE_NAME_PREFIX) > 0
               ) {
                 return (
-                  <TouchableOpacity onPress={() => this.test(item)}>
+                  <TouchableOpacity
+                    onPress={() => this.handleSelectingBLEDevice(item)}>
                     <View style={[styles.row, {backgroundColor: color}]}>
                       <Text style={styles.bleDeviceName}>{item.name}</Text>
                       <Text style={styles.bleMacAddr}>{item.id}</Text>
