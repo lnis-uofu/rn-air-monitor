@@ -18,6 +18,7 @@ import Geolocation from '@react-native-community/geolocation';
 import BleManager from 'react-native-ble-manager';
 import {totalSize} from '../../../../api/Dimensions';
 import GlobalConstants from '../../../Constants/globalConstants';
+import fireStoreHelpers from '../../../fireStoreHelpers/fireStoreHelpers';
 const window = Dimensions.get('window');
 const BleManagerModule = NativeModules.BleManager;
 const bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
@@ -114,12 +115,12 @@ export default class BleDeviceRegistration extends Component {
    * Commented out to keep data posted to database after unmount
    * There would likely some memory issue here if keep mounting and unmount this screen
    */
-  // componentWillUnmount() {
-  //   this.handlerDiscover.remove();
-  //   this.handlerStop.remove();
-  //   this.handlerDisconnect.remove();
-  //   this.handlerUpdate.remove();
-  // }
+  componentWillUnmount() {
+    this.handlerDiscover.remove();
+    this.handlerStop.remove();
+    this.handlerDisconnect.remove();
+    this.handlerUpdate.remove();
+  }
 
   handleDisconnectedPeripheral(data) {
     let peripherals = this.state.peripherals;
@@ -150,8 +151,8 @@ export default class BleDeviceRegistration extends Component {
    *  */
   geoOnSuccess = position => {
     var peripheral = this.currentPeripheral;
-    BleManager.read(peripheral, pms_service, pms_service_read_noti).then(
-      readData => {
+    BleManager.read(peripheral, pms_service, pms_service_read_noti)
+      .then(readData => {
         var a = '';
         /**
          * BLE package is in JSON String format and received as bytes array.
@@ -166,8 +167,10 @@ export default class BleDeviceRegistration extends Component {
         dataObj.LON = position.coords.longitude;
         dataObj = this.addDateToWearableDataObject(dataObj);
         this.sendWearableDataToServer(dataObj);
-      },
-    );
+      })
+      .catch(err => {
+        console.log(err);
+      });
   };
 
   /**
@@ -324,10 +327,16 @@ export default class BleDeviceRegistration extends Component {
                     this.readWiFiAddress(peripheral.id)
                       .then(data => {
                         console.log(data);
+                        fireStoreHelpers.addDeviceInfoToFireBaseDataBase(
+                          data.trim(),
+                          peripheral.name.trim(),
+                        );
                       })
                       .catch(err => {
                         console.warn(err);
                       });
+                  }, 500);
+                  setTimeout(() => {
                     BleManager.startNotification(
                       peripheral.id,
                       pms_service,
