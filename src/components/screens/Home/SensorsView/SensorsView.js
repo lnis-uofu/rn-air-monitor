@@ -180,8 +180,11 @@ export class SensorsView extends Component {
       });
       // Initialize dummy flatlist data
       this.dataPreparation();
-      // Sleep 3s in order to wait for sensors array to be filled up
-      await sleep(3000).then(() => {
+      /**
+       * Per entry in the database, it took some time to go through the process of getting data and render the list
+       * 700 ms per device is what I am seeing a stable waiting time on my testing device
+       */
+      await sleep(userDevices.length * 700).then(() => {
         this.setState({
           dataSource: sensors,
         });
