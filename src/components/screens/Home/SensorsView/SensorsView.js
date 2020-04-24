@@ -182,9 +182,9 @@ export class SensorsView extends Component {
       this.dataPreparation();
       /**
        * Per entry in the database, it took some time to go through the process of getting data and render the list
-       * 700 ms per device is what I am seeing a stable waiting time on my testing device
+       * 1000 ms per device is what I am seeing a stable waiting time on my testing device
        */
-      await sleep(userDevices.length * 700).then(() => {
+      await sleep(userDevices.length * 1000).then(() => {
         this.setState({
           dataSource: sensors,
         });

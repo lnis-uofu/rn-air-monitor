@@ -179,7 +179,7 @@ export default class BleDeviceRegistration extends Component {
    * WiFi address is the default address that we would see a lot using Espressif tool kit
    * WiFi address is the one we have been using to manage sensors as well
    */
-  readWiFiAddress = peripheral => {
+  readWiFiMacAddress = peripheral => {
     return new Promise(function(resolve, reject) {
       BleManager.read(peripheral, pms_service, wifi_addr_service_read)
         .then(readData => {
@@ -295,7 +295,7 @@ export default class BleDeviceRegistration extends Component {
    *
    * @todo: data rate to be configurable
    */
-  handleSelectingBLEDevice(peripheral) {
+  handleConnectingBLEDevice(peripheral) {
     if (peripheral) {
       if (peripheral.connected) {
         BleManager.disconnect(peripheral.id);
@@ -324,7 +324,7 @@ export default class BleDeviceRegistration extends Component {
                 peripheralInfo => {
                   // console.log(peripheralInfo);
                   setTimeout(() => {
-                    this.readWiFiAddress(peripheral.id)
+                    this.readWiFiMacAddress(peripheral.id)
                       .then(data => {
                         console.log(data);
                         fireStoreHelpers.addDeviceInfoToFireBaseDataBase(
@@ -406,7 +406,7 @@ export default class BleDeviceRegistration extends Component {
               ) {
                 return (
                   <TouchableOpacity
-                    onPress={() => this.handleSelectingBLEDevice(item)}>
+                    onPress={() => this.handleConnectingBLEDevice(item)}>
                     <View style={[styles.row, {backgroundColor: color}]}>
                       <Text style={styles.bleDeviceName}>{item.name}</Text>
                       <Text style={styles.bleMacAddr}>{item.id}</Text>
