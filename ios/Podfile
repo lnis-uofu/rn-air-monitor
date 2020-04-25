@@ -37,6 +37,12 @@ pod 'react-native-camera', path: '../node_modules/react-native-camera', subspecs
   pod 'Permission-Camera', :path => "#{permissions_path}/Camera.podspec"
 
 
+  pod 'RNWifi', :path => '../node_modules/react-native-wifi-reborn'
+
+  pod 'react-native-ble-manager', :path => '../node_modules/react-native-ble-manager'
+
+  pod 'react-native-geolocation', :path => '../node_modules/@react-native-community/geolocation'
+
   target 'rn_air_monitorTests' do
     inherit! :search_paths
     # Pods for testing

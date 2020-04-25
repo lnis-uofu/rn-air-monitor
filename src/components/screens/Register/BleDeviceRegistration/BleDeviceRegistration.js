@@ -27,10 +27,16 @@ const bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
  * These UUIDs base on the configuration on the device side
  * @Note: Once we change these UUIDs, the same changes need to be made on the firmware side and vice versa
  */
-const pms_service = '000000ff-0000-1000-8000-00805f9b34fb';
-const pms_service_read_noti = '0000ff01-0000-1000-8000-00805f9b34fb';
-const pms_service_write = '0000ff03-0000-1000-8000-00805f9b34fb';
-const wifi_addr_service_read = '0000ff04-0000-1000-8000-00805f9b34fb';
+pms_service = '000000ff-0000-1000-8000-00805f9b34fb';
+pms_service_read_noti = '0000ff01-0000-1000-8000-00805f9b34fb';
+pms_service_write = '0000ff03-0000-1000-8000-00805f9b34fb';
+wifi_addr_service_read = '0000ff04-0000-1000-8000-00805f9b34fb';
+if (Platform.OS === 'ios') {
+  pms_service = '00FF';
+  pms_service_read_noti = 'FF01';
+  pms_service_write = 'FF03';
+  wifi_addr_service_read = 'FF04';
+}
 
 // @todo: Add mac address to firebase corresponding to the user
 export default class BleDeviceRegistration extends Component {
@@ -322,7 +328,7 @@ export default class BleDeviceRegistration extends Component {
               });*/
               BleManager.retrieveServices(peripheral.id).then(
                 peripheralInfo => {
-                  // console.log(peripheralInfo);
+                  console.log(peripheralInfo);
                   setTimeout(() => {
                     this.readWiFiMacAddress(peripheral.id)
                       .then(data => {
@@ -402,7 +408,8 @@ export default class BleDeviceRegistration extends Component {
                */
               if (
                 item.name &&
-                item.name.includes(GlobalConstants.WEARABLE_NAME_PREFIX) > 0
+                (item.name.includes(GlobalConstants.WEARABLE_NAME_PREFIX) > 0 ||
+                item.name.includes(GlobalConstants.WEARABLE_NAME_PREFIX_IOS))
               ) {
                 return (
                   <TouchableOpacity
