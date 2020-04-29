@@ -19,6 +19,9 @@ import Loader from '../../components/Loader';
 import ConfigurationScreen from './ConfigurationScreen/ConfigurationScreen';
 import SensorsView from './SensorsView/SensorsView';
 import InputField from '../../components/InputField';
+import RadioForm from 'react-native-simple-radio-button';
+import Geolocation from '@react-native-community/geolocation';
+
 const homebgPath = require('../../../../assets/home_bg.png');
 const configureIconPath = require('../../../../assets/configure_icon.png');
 const deviceLabel = require('../../../../assets/label_icon.png');
@@ -34,67 +37,71 @@ const sleep = milliseconds => {
   return new Promise(resolve => setTimeout(resolve, milliseconds));
 };
 const usersCollection = 'users';
+var radio_props = [
+  {label: 'Wall Mounted', value: 0},
+  {label: 'Wearable', value: 1},
+];
 
-addDeviceInfoToFireBaseDataBase = async (macAddress, label) => {
-  console.log('Get devices info!');
-  var isDuplicated = false;
-  var dev_map = {mac_add: macAddress, user_label: label};
-  const refUser = await firebase
-    .firestore()
-    .collection(usersCollection)
-    .doc(global.email);
-
-  console.log('firebase.firestore().runTransaction');
-  await firebase
-    .firestore()
-    .runTransaction(async transaction => {
-      const doc = await transaction.get(refUser);
-
-      // if it does not exist set the entry
-      if (!doc.exists) {
-        console.log('Not EXISTED');
-        const newDeviceData = new Array();
-        newDeviceData.push(macAddress);
-        transaction.set(refUser, {devices: newDeviceData});
-        return 1;
-      }
-      console.log('EXISTED');
-      const devicesData = doc.data().devices;
-      console.log(devicesData);
-      // Check to see if there is such field
-      if (devicesData) {
-        // Check duplication
-        devicesData.forEach(device => {
-          if (macAddress === device.mac_add) {
-            console.log('Found duplication');
-            isDuplicated = true;
-          }
-        });
-        if (isDuplicated !== true) {
-          // devicesData.push(macAddress);
-          devicesData.push(dev_map);
-          console.log('New Devices data ');
-          console.log(devicesData);
-          // Update new device information to the current table
-          transaction.update(refUser, {
-            devices: devicesData,
-          });
-        } else {
-          console.log('Found duplication');
-        }
-      } else {
-        const newDeviceData = new Array();
-        newDeviceData.push(dev_map);
-        // Update new information to database
-        transaction.update(refUser, {devices: newDeviceData});
-        return 1;
-      }
-    })
-    .catch(err => {
-      console.warn(err);
-    });
-};
 export default class HomeScreen extends React.Component {
+  addDeviceInfoToFireBaseDataBase = async (macAddress, label) => {
+    console.log('Get devices info!');
+    var isDuplicated = false;
+    var dev_map = {mac_add: macAddress, user_label: label};
+    const refUser = await firebase
+      .firestore()
+      .collection(usersCollection)
+      .doc(global.email);
+
+    console.log('firebase.firestore().runTransaction');
+    await firebase
+      .firestore()
+      .runTransaction(async transaction => {
+        const doc = await transaction.get(refUser);
+
+        // if it does not exist set the entry
+        if (!doc.exists) {
+          console.log('Not EXISTED');
+          const newDeviceData = new Array();
+          newDeviceData.push(macAddress);
+          transaction.set(refUser, {devices: newDeviceData});
+          return 1;
+        }
+        console.log('EXISTED');
+        const devicesData = doc.data().devices;
+        console.log(devicesData);
+        // Check to see if there is such field
+        if (devicesData) {
+          // Check duplication
+          devicesData.forEach(device => {
+            if (macAddress === device.mac_add) {
+              console.log('Found duplication');
+              isDuplicated = true;
+            }
+          });
+          if (isDuplicated !== true) {
+            // devicesData.push(macAddress);
+            devicesData.push(dev_map);
+            console.log('New Devices data ');
+            console.log(devicesData);
+            // Update new device information to the current table
+            transaction.update(refUser, {
+              devices: devicesData,
+            });
+          } else {
+            console.log('Found duplication');
+          }
+        } else {
+          const newDeviceData = new Array();
+          newDeviceData.push(dev_map);
+          // Update new information to database
+          transaction.update(refUser, {devices: newDeviceData});
+          return 1;
+        }
+      })
+      .catch(err => {
+        console.warn('addDeviceInfoToFireBaseDataBase' + err);
+      });
+  };
   constructor() {
     super();
     this.state = {
@@ -105,6 +112,8 @@ export default class HomeScreen extends React.Component {
       registeringDevice: false,
       isLoading: false,
       isEnteringDeviceLabel: false,
+      deviceTypeConfirm: false,
+      isWearable: false,
     };
     this.label = '';
   }
@@ -138,14 +147,19 @@ export default class HomeScreen extends React.Component {
       softAPssid: softAPssid,
     });
     // Update board information to database
-    await addDeviceInfoToFireBaseDataBase(qrData.data, this.label);
+    await this.addDeviceInfoToFireBaseDataBase(qrData.data, this.label);
     // Connect to Soft Access Point on Device
     this.connectToAirUSoftAP(softAPssid);
   };
-
   componentDidMount = async () => {
     console.log('HomeScreen mounted ' + global.email);
-    // await addDeviceInfoToFireBaseDataBase('aa:bB:cc:dd', 'example label');
+    Geolocation.getCurrentPosition(
+      position => {
+        console.log(position);
+      },
+      error => Alert.alert(error.message),
+      {enableHighAccuracy: true, timeout: 200000, maximumAge: 1000},
+    );
   };
 
   // Return Response object
@@ -231,21 +245,64 @@ export default class HomeScreen extends React.Component {
   };
 
   onSubmittingDeviceLabel = () => {
-    // this.label = text;
     if (this.label.length === 0) {
       Alert.alert('Please give your AirU a name!');
       return;
     }
-    this.setState({
-      cameraScan: true,
-      isEnteringDeviceLabel: false,
-    });
+    // skip the camera scan when it is wearable device
+    if (this.state.isWearable) {
+      this.setState({
+        cameraScan: false,
+        registeringDevice: true,
+        isLoading: false,
+        isEnteringDeviceLabel: false,
+      });
+    } else {
+      this.setState({
+        cameraScan: true,
+        isEnteringDeviceLabel: false,
+      });
+    }
   };
 
   labelInputHandler = text => {
     this.label = text;
   };
 
+  deviceTypesRadioButtons = () => {
+    return (
+      <View style={styles.enterSensorLabelView}>
+        <Text
+          style={[
+            {
+              fontSize: totalSize(2.5),
+              textAlign: 'center',
+              marginTop: h(3),
+              marginBottom: h(1.5),
+            },
+          ]}>
+          Select your device type!
+        </Text>
+        <RadioForm
+          radio_props={radio_props}
+          initial={0}
+          buttonColor={'#20d440'}
+          selectedButtonColor={'#20d440'}
+          onPress={value => {
+            if (value === 1) {
+              this.setState({isWearable: true});
+            } else {
+              this.setState({isWearable: false});
+            }
+            this.setState({
+              isEnteringDeviceLabel: true,
+              deviceTypeConfirm: false,
+            });
+          }}
+        />
+      </View>
+    );
+  };
   render() {
     if (this.state.cameraScan) {
       return (
@@ -266,7 +323,10 @@ export default class HomeScreen extends React.Component {
       );
     } else if (this.state.registeringDevice) {
       return (
-        <DeviceRegistration onRegistrationDone={this.deviceRegistrationDone} />
+        <DeviceRegistration
+          onRegistrationDone={this.deviceRegistrationDone}
+          isWearable={this.state.isWearable}
+        />
       );
     } else if (this.state.configurationPage) {
       return <ConfigurationScreen onDone={this.configurationPageDone} />;
@@ -291,8 +351,8 @@ export default class HomeScreen extends React.Component {
               Alert.alert('Disable your mobile data', mobileDataAlertMessage, [
                 {
                   text: 'OK',
-                  onPress: () => {
-                    this.setState({isEnteringDeviceLabel: true});
+                  onPress: async () => {
+                    this.setState({deviceTypeConfirm: true});
                   },
                 },
               ]);
@@ -305,6 +365,13 @@ export default class HomeScreen extends React.Component {
             indicatorSize={100}
             indicatorColor="#FFF"
           />
+          <Modal
+            style={styles.modalStyle}
+            transparent={true}
+            animationType={'none'}
+            visible={this.state.deviceTypeConfirm}>
+            {this.deviceTypesRadioButtons()}
+          </Modal>
           <Modal
             style={styles.modalStyle}
             transparent={true}

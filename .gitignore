@@ -62,3 +62,4 @@ buck-out/
 google-services.json
 ios/GoogleService-Info.plist
 notes.txt
+.vscode/settings.json

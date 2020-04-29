@@ -8,9 +8,14 @@ import {
   Alert,
 } from 'react-native';
 import {h, w, totalSize} from '../../../../api/Dimensions';
-import FireStoreHelpers from '../../../fireStoreHelpers/fireStoreHelpers';
 import GlobalConstants from '../../../Constants/globalConstants.js';
-const locations = 'Retrieving Data...';
+import FireStoreConstants from '../../../Constants/fireStoreConstants';
+import firebase from 'react-native-firebase';
+
+const labels = 'Retrieving Data...';
+const sleep = milliseconds => {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+};
 export class SensorsView extends Component {
   constructor() {
     super();
@@ -38,6 +43,11 @@ export class SensorsView extends Component {
     }
     return color;
   };
+
+  /**
+   * Show dummy list of device corresponding to number of devices belong to this user
+   * Showing user that the application is in progress getting sensor's most recent PM25 data.
+   */
   dataPreparation = () => {
     var that = this;
     let sensors = Array.apply(null, Array(this.state.sensorCount)).map(
@@ -47,7 +57,7 @@ export class SensorsView extends Component {
         return {
           pmsValue: pmsValue,
           color: color,
-          location: locations,
+          label: labels,
         };
       },
     );
@@ -93,28 +103,76 @@ export class SensorsView extends Component {
         console.warn('getPMValue error code: --> ' + error);
       });
   };
+
+  /**
+   * Query firebase database information from 'users' collection
+   * Get corresponding user in this collection based on login information
+   * Then get 'devices' fields to get an array of devices belong to this user
+   *
+   * @returns an array of 'devices'
+   */
+  async getUserDevices() {
+    console.log('getUserDevices ' + global.email);
+    var devicesData;
+    const user = await firebase
+      .firestore()
+      .collection(FireStoreConstants.collections.users)
+      .doc(global.email);
+    console.log('firebase.firestore().runTransaction');
+    await firebase
+      .firestore()
+      .runTransaction(async transaction => {
+        const doc = await transaction.get(user);
+        devicesData = await doc.data().devices;
+        console.log(devicesData);
+      })
+      .catch(err => {
+        console.log('GetUserDevices err' + err);
+      });
+    return await Promise.resolve(devicesData);
+  }
+
+  /**
+   * When Mount this view:
+   * - Fetch Sensors that belong to this account into a set
+   * - Fetch the most recent PMS data of this sensor set and display
+   */
   componentDidMount = async () => {
-    var sensors = new Array();
-    FireStoreHelpers.getUserDevices().then(userDevices => {
+    this.getUserDevices().then(async userDevices => {
       this.setState({sensorCount: userDevices.length});
-      userDevices.forEach(device => {
-        this.getPMValue(device.mac_add).then(pmsValue => {
+      let sensors = new Array(0);
+      userDevices.forEach(async device => {
+        // console.log(device);
+        await this.getPMValue(device.mac_add).then(async pmsValue => {
           if (pmsValue.ok) {
-            pmsValue.json().then(responseJson => {
-              if (responseJson) {
-                let color = this.pmsColorScale(responseJson[0].avg_pm25);
-                sensors.push({
-                  pmsValue: responseJson[0].avg_pm25,
-                  color: color,
-                  location: device.user_label,
-                });
-                // console.log(sensors);
-                this.setState({
-                  //Setting the data source
-                  dataSource: sensors,
-                });
-              }
-            });
+            pmsValue
+              .json()
+              .then(async responseJson => {
+                // console.log(responseJson);
+                if (responseJson) {
+                  // Get the most recent PMS25 data responseJson[0]
+                  let color = await this.pmsColorScale(
+                    responseJson[0].avg_pm25,
+                  );
+                  let obj = {
+                    pmsValue: responseJson[0].avg_pm25,
+                    color: color,
+                    label: device.user_label,
+                  };
+                  sensors.push(obj);
+                  // console.log('sensors');
+                  // console.log(sensors);
+                }
+              })
+              .catch(err => {
+                console.log(err);
+                let obj = {
+                  pmsValue: 'OFFL',
+                  color: this.pmsColorScale(400),
+                  label: device.user_label,
+                };
+                sensors.push(obj);
+              });
           } else {
             Alert.alert('Could not get data! Error value', pmsValue.status);
           }
@@ -122,10 +180,21 @@ export class SensorsView extends Component {
       });
       // Initialize dummy flatlist data
       this.dataPreparation();
+      /**
+       * Per entry in the database, it took some time to go through the process of getting data and render the list
+       * 1000 ms per device is what I am seeing a stable waiting time on my testing device
+       */
+      await sleep(userDevices.length * 1000).then(() => {
+        this.setState({
+          dataSource: sensors,
+        });
+      });
     });
   };
 
   render() {
+    console.log('RENDER');
+    console.log(this.state.dataSource);
     if (this.state.sensorCount > 0) {
       return (
         <View style={styles.MainContainer}>
@@ -140,7 +209,7 @@ export class SensorsView extends Component {
                   ]}>
                   <Text style={styles.sensorPmsData}>{item.pmsValue}</Text>
                 </TouchableOpacity>
-                <Text style={styles.sensorLabel}>{item.location}</Text>
+                <Text style={styles.sensorLabel}>{item.label}</Text>
               </View>
             )}
             //Setting the number of column
