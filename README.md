@@ -28,6 +28,7 @@ ${JAVA_HOME} = D:\Program Files\Android\Android Studio\jre\jre
 "npm run android" or "react-native run-android" - npm script for the convenient of running from VSCODE
 
 5. Run on iOS
+- install cocoapods through homebrew.
 - under ios directory, from terminal, run command "pod install"
 - open .xcworkspace file
 - Choose build destination
